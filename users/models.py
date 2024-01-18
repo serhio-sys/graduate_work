@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from allauth.account.models import EmailAddress
 from game.models import Enemy
 from django.conf import settings
 from django.urls import reverse
@@ -15,6 +16,7 @@ class NewUser(AbstractUser):
     lvl = models.IntegerField("LEVEL",default=1)
     exp = models.IntegerField("EXP",default=0)
     role = models.CharField("ROLE", default=None, max_length=40, blank=True, null=True)
+    current_position = models.CharField("POSITION IN THE GAME", max_length=200, blank=True, null=True, default=None)
     weapon = models.ForeignKey('game.Weapon',verbose_name="WEAPON",default='',null=True,blank=True,on_delete=models.SET_NULL)
     armor = models.ForeignKey('game.Armor',verbose_name="ARMOR",default='',null=True,blank=True,on_delete=models.SET_NULL)
     dungeon_lvl = models.IntegerField("DUNGEON LVL",default=1)
@@ -24,6 +26,8 @@ class NewUser(AbstractUser):
     enemy = models.ForeignKey("game.Enemy",verbose_name="ENEMY",default='',null=True,blank=True,on_delete=models.SET_NULL)
     effect = models.ForeignKey("game.Effect",verbose_name="EFFECT",default='',null=True,blank=True,on_delete=models.SET_NULL)
 
+    def email_verified(self):
+        return EmailAddress.objects.filter(user=self, verified=True).exists()
 
     def ReturnAllDamage(self):
         if self.weapon is None:

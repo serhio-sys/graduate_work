@@ -5,13 +5,15 @@
 
 {% load crispy_forms_filters %}
 
-{% block head_title %}{% trans "Sign In" %}{% endblock %}
+{% block head_title %}{% trans "Вхід" %}{% endblock %}
 
 {% block main %}
-  <div class="position-absolute top-50 start-50 translate-middle w-100">
+<div class="w-100 p-3 d-flex flex-direction-column align-items-center justify-content-center">
+  <div class="p-3 rounded bg-dark" style="max-width:850px;width:100%;">
     <div class="text-center">
-      <h1>{% trans "Sign In" %}</h1>
-    </div>
+      <h1>{% trans "Вхід" %}</h1>
+      <p>{% blocktrans %}Не маєте акаунту? Тоді зареєструйтесь <a href="{{ signup_url }}">реєстрація</a>.{% endblocktrans %}</p>
+  </div>
     <div class="row">
       <div class="col-md-6 offset-md-3">
         <form class="login" method="POST" action="{% url 'account_login' %}">
@@ -21,13 +23,17 @@
             <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
             {% endif %}
             <div class="d-grid">
-              <button class="primaryAction mt-3 btn btn-dark btn-lg" type="submit">{% trans "Sign In" %}</button><br>
+              <button class="primaryAction mt-3 btn btn-light btn-lg" type="submit">{% trans "Увійти" %}</button><br>
             </div>
-            <div class="socialaccount_providers p-1">
-              {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-            </div>  
+          </form>
+          <form method="POST" action="/accounts/google/login/?process=login">
+            {% csrf_token %}
+            <button type="submit" class="socialaccount_providers empty-btn p-1">
+                {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+            </button> 
           </form>
       </div>
     </div>
   </div>
+</div>
 {% endblock %}

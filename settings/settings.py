@@ -12,11 +12,12 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from django.core.management.utils import get_random_secret_key
+from dotenv import load_dotenv
 from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -28,11 +29,6 @@ SECRET_KEY = get_random_secret_key()
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
-LANGUAGES = [
-    ('en', _('English')),
-    ('uk', _('Ukrainian')),
-]
 
 ENVIRONMENT = os.environ.get('ENVIRONMENT', default='development')
 
@@ -59,6 +55,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+
+    'django_cleanup.apps.CleanupConfig',
 
     'allauth',
     'allauth.account',
@@ -100,6 +98,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'settings.context_processors.context_processor',
             ],
         },
     },
@@ -145,8 +144,12 @@ LOGIN_REDIRECT_URL = '/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
+LANGUAGES = [
+    ('en', _('English')),
+    ('uk', _('Ukrainian')),
+]
 
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = 'uk'
 
 TIME_ZONE = 'UTC'
 
@@ -180,11 +183,18 @@ STAT_SCALE = 0.4
 ROLES = {
     "strength": {
         "dmg": 0,
-        "hp": STAT_SCALE
+        "hp": STAT_SCALE,
+        "double_dmg": False
     },
     "agility": {
         "dmg": STAT_SCALE,
-        "hp": 0
+        "hp": 0,
+        "double_dmg": False
+    },
+    "shooter": {
+        "dmg": STAT_SCALE,
+        "hp": 0,
+        "double_dmg": True
     }
 }
 
@@ -198,12 +208,14 @@ ACCOUNT_SIGNUP_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT = 'home'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_FORMS = {'signup': 'users.forms.CustomUserCreationForm', 'login': 'users.forms.CustomUserLoginForm'}
+ACCOUNT_FORMS = {'signup': 'users.forms.CustomUserCreationFormAccount','reset_password_from_key': 'users.forms.CustomResetPasswordKeyForm', 'login': 'users.forms.CustomLoginForm', 'reset_password':'users.forms.CustomResetPassword'}
+SOCIALACCOUNT_AUTO_SIGNUP = False
+SOCIALACCOUNT_FORMS = {'signup': 'users.forms.CustomUserCreationForm'}
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APP': {
-            'client_id': '310411369237-6e0aea90g5n2ufm3fga620lgvmok5lr2.apps.googleusercontent.com',
-            'secret': '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',
+            'client_id': str(os.getenv("GOOGLE_CLIENT_ID",default=None)),
+            'secret': str(os.getenv("GOOGLE_SECRET_KEY",default=None)),
             'key': '',
             'sites': [SITE_ID,]
         }
@@ -213,4 +225,12 @@ SOCIALACCOUNT_PROVIDERS = {
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
