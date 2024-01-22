@@ -1,0 +1,20 @@
+.navbar-item img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    overflow: hidden;
+}
+.empty-btn{
+  border: none;
+  outline: none;
+  background: transparent;
+}
+.locale{
+    text-align: center;
+}
+.locale-form{
+    text-align: center;
+}
+form li {
+    color: white;
+}

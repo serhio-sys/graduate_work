@@ -1,0 +1,20 @@
+[
+    {
+        "model": "game.Enemy",
+        "fields": {
+            "name": "",
+            "health": "",
+            "attack": "",
+            "defence": "",
+            "agility": "",
+            "strength": "",
+            "lvl": "",
+            "role": "",
+            "slug": "",
+            "img": "",
+            "weapon": "",
+            "armor": "",
+            "dungeon": 1
+        }
+    }
+]

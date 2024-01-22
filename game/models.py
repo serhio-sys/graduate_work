@@ -2,16 +2,12 @@ from django.db import models
 from django.urls import reverse
 
 class DungeonLvl(models.Model):
+    lvl = models.PositiveIntegerField("DUNGEON LVL")
     min_treasure = models.PositiveIntegerField("MIN Treasure")
     max_treasure = models.PositiveIntegerField("MAX Treasure")
     fine = models.PositiveIntegerField("FINE")
     heal = models.PositiveIntegerField("HEAL")
-    min_enemy_stats = models.PositiveIntegerField("MIN_DPS")
-    max_enemy_stats = models.PositiveIntegerField("MAX_DPS")
-    weapon = models.ForeignKey('Weapon',verbose_name="WEAPON",default=None,null=True,blank=True,on_delete=models.SET_NULL)
-    armor = models.ForeignKey('Armor',verbose_name="ARMOR",default=None,null=True,blank=True,on_delete=models.SET_NULL)
-    boss = models.ForeignKey("Enemy", verbose_name="BOSS", null=True, blank=True, default=None, on_delete=models.CASCADE)
-
+    unlock_lvl = models.PositiveIntegerField("LVL FOR UNLOCK BOSS")
 
 class Weapon(models.Model):
     name = models.CharField("WEAPON NAME",max_length=30)
@@ -20,9 +16,10 @@ class Weapon(models.Model):
     balance = models.IntegerField("SUM")
     lvl = models.IntegerField("LVL")
     dun_lvl = models.IntegerField("DUNGEON LVL")
+    user = models.ForeignKey("users.NewUser", verbose_name="Owner", default=None,null=True,blank=True,on_delete=models.SET_NULL)
 
     def get_absolute_url(self):
-        return reverse("buy_w", kwargs={"weapon": self.pk})
+        return reverse("buy_w", kwargs={"pk": self.pk})
     
 
     def __str__(self):
@@ -36,18 +33,24 @@ class Armor(models.Model):
     balance = models.IntegerField("SUM")
     lvl = models.IntegerField("LVL")
     dun_lvl = models.IntegerField("DUNGEON LVL")
+    user = models.ForeignKey("users.NewUser", verbose_name="Owner", default=None,null=True,blank=True,on_delete=models.SET_NULL)
 
     def get_absolute_url(self):
-        return reverse("buy_a", kwargs={"armor": self.pk})
+        return reverse("buy_a", kwargs={"pk": self.pk})
 
     def __str__(self):
         return self.name
 
 
 class Effect(models.Model):
-    health = models.IntegerField("HP",default=100)
-    attack = models.IntegerField("ATTACK",default=1)
-    defence = models.IntegerField("ARMOR",default=1)
+    name = models.CharField("NAME", max_length=50, default="")
+    desc = models.TextField("Desc")
+    is_positive = models.BooleanField("IS_POSITIVE", default=True)
+    is_church_ef = models.BooleanField("IS CHURCH EFFECT", default=False)
+    agility = models.IntegerField("AGILITY", default=1)
+    strength = models.IntegerField("STRENGTH", default=1)
+    user = models.ForeignKey("users.NewUser", default=None, null=True, blank=True, on_delete=models.SET_NULL)
+    deleted_time = models.DateTimeField("DELETED TIME", default=None, null=True, blank=True)
 
 class Enemy(models.Model):
     name = models.CharField("NAME",max_length=40)
@@ -60,9 +63,11 @@ class Enemy(models.Model):
     role = models.CharField("ROLE", max_length=40, default="strength")
     slug = models.SlugField("URL",unique=True)
     img = models.ImageField("IMG",upload_to="enemy/",default="")
-
-    weapon = models.ForeignKey('Weapon',verbose_name="WEAPON",default=None,null=True,blank=True,on_delete=models.SET_NULL)
-    armor = models.ForeignKey('Armor',verbose_name="ARMOR",default=None,null=True,blank=True,on_delete=models.SET_NULL)
+    is_boss = models.BooleanField("IS_BOSS", default=False),
+    weapon_equiped = models.ForeignKey('game.Weapon',verbose_name="WEAPON",default=None,null=True,blank=True,on_delete=models.SET_NULL, related_name='equipped_weapon_enemy')
+    armor_equiped = models.ForeignKey('game.Armor',verbose_name="ARMOR",default=None,null=True,blank=True,on_delete=models.SET_NULL, related_name='equipped_armor_enemy')
+    weapon2_equiped = models.ForeignKey('game.Weapon', verbose_name="SEC WEAPON", default=None,null=True,blank=True,on_delete=models.SET_NULL, related_name='equipped_weapon2_enemy')
+    dungeon = models.ForeignKey('DungeonLvl', default=None,null=True,blank=True,on_delete=models.SET_NULL)
 
     def ReturnAllArmor(self):
         if self.armor is None:

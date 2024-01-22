@@ -4,10 +4,11 @@ from django.contrib.auth import get_user_model
 from allauth.socialaccount.forms import SignupForm
 from allauth.socialaccount.models import SocialAccount, EmailAddress
 from allauth.utils import set_form_field_order, get_username_max_length
-from allauth.account.forms import PasswordField, SignupForm as SF, LoginForm, ResetPasswordForm, ResetPasswordKeyForm, SetPasswordField
+from allauth.account.forms import PasswordField, SignupForm as SF, LoginForm, ResetPasswordForm, ChangePasswordForm, ResetPasswordKeyForm, SetPasswordField
 from django.utils.translation import gettext_lazy as _
 from django.utils.safestring import mark_safe
 from django.urls import reverse, NoReverseMatch
+from game.models import DungeonLvl
 
 CHOICE = [
     ("en", "EN"),
@@ -54,6 +55,7 @@ class CustomUserCreationFormAccount(SF):
         
     def save(self, request):
         user = super(CustomUserCreationFormAccount, self).save(request)
+        user.dungeon = DungeonLvl.objects.get(pk=1)
         if request.FILES:
             user.img = request.FILES['img']
         user.save()
@@ -65,18 +67,17 @@ class CustomUserCreationForm(SignupForm):
     username = forms.CharField(required=True, label="Ім'я користувача", widget=forms.TextInput(attrs={"placeholder":_("Ім'я користувача")}))
     account_img = forms.ImageField(required=False, label=_("Аватар (Не обов'язковий)"))
     password1 = PasswordField(label=_("Пароль"), autocomplete="new-password")
-    password2 = PasswordField(label=_("Пароль (знову)"), autocomplete="new-password")
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
     def save(self, request):
         password = self.cleaned_data["password1"]
-        if password != self.cleaned_data["password2"]:
-            raise Exception(_("Паролі не співпадають"))
         user = super(CustomUserCreationForm, self).save(request)
         user.activated = True
         user.set_password(password)
+        user.dungeon = DungeonLvl.objects.get(pk=1)
         if request.FILES:
             user.img = request.FILES['account_img']
         user.save()
@@ -84,9 +85,9 @@ class CustomUserCreationForm(SignupForm):
     
 
 class UserUpdateForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, email_verified, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance.email_verified():
+        if email_verified:
             self.fields['email'] = forms.EmailField(label=_("Електронна пошта"), widget=forms.EmailInput(attrs={'value':self.instance.email, "placeholder":_("Електронна пошта")}))
         else:
             self.fields['email'] = forms.EmailField(label=_("Електронна пошта"), widget=forms.EmailInput(attrs={'readonly':'readonly','value':self.instance.email}))
@@ -122,6 +123,16 @@ class CustomResetPassword(ResetPasswordForm):
 class CustomResetPasswordKeyForm(ResetPasswordKeyForm):
     password1 = SetPasswordField(label=_("Новий пароль"))
     password2 = PasswordField(label=_("Повторіть пароль"))
+
+class CustomChangePasswordForm(ChangePasswordForm):
+    oldpassword = PasswordField(
+        label=_("Поточний пароль"), autocomplete="current-password"
+    )
+    password1 = SetPasswordField(
+        label=_("Новий пароль")
+    )
+    password2 = PasswordField(label=_("Повторіть новий пароль"))
+
 
 class ChoiceLanguageForm(forms.Form):
     locale = forms.ChoiceField(label=False, choices=CHOICE, widget=forms.Select(attrs={'class':'form-control locale'}))

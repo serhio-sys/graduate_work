@@ -1,0 +1,35 @@
+[
+    {
+        "model": "game.Weapon",
+        "fields": {
+            "name": "Weapon1",
+            "damage": 20,
+            "img": "weapon/unnamed.jpg",
+            "balance": 100,
+            "lvl": 1,
+            "dun_lvl": 1 
+        }
+    },
+    {
+        "model": "game.Weapon",
+        "fields": {
+            "name": "Weapon2",
+            "damage": 30,
+            "img": "weapon/unnamed.jpg",
+            "balance": 100,
+            "lvl": 1,
+            "dun_lvl": 1 
+        }
+    },
+    {
+        "model": "game.Armor",
+        "fields": {
+            "name": "Armor",
+            "armor": 10,
+            "img": "armor/unnamed.jpg",
+            "balance": 100,
+            "lvl": 1,
+            "dun_lvl": 1 
+        }
+    }
+]

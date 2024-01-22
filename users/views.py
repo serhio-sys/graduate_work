@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.views.generic import View
+from django.views.generic import View, ListView
 from django.utils import translation
 from django.http import HttpRequest, JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import ChoiceLanguageForm, UserUpdateForm
+from django.contrib.auth import get_user_model
 
 
 class SetLocale(View):
@@ -23,8 +24,9 @@ class ProfileEdit(LoginRequiredMixin, View):
     template_name = "users/profile.html"
 
     def get(self, request: HttpRequest):
-        form = UserUpdateForm(instance=request.user)
-        return render(request=request, template_name=self.template_name, context={'form': form})
+        email_verified = request.user.email_verified()
+        form = UserUpdateForm(email_verified=email_verified, instance=request.user)
+        return render(request=request, template_name=self.template_name, context={'form': form, 'email_verified': email_verified})
     
     def post(self, request: HttpRequest):
         form = UserUpdateForm(data=request.POST, instance=request.user)
@@ -35,6 +37,13 @@ class ProfileEdit(LoginRequiredMixin, View):
         else:
             return render(request=request, template_name=self.template_name, context={'form': form, 'errors': form.errors})
         return redirect('profile_edit')
+    
+class ForbesView(ListView):
+    paginate_by = 3
+    model = get_user_model()
+    queryset = get_user_model().objects.filter(role__isnull=False).select_related('weapon2_equiped').select_related('weapon_equiped').order_by('-balance', '-lvl')
+    template_name = "users/forbes.html"
+
 
 @login_required
 def delete_account(request: HttpRequest):

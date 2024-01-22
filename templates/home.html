@@ -8,38 +8,19 @@
     <title>{% block head_title %}{% trans "Boycovskiy Club" %}{% endblock %}</title>
     <link rel="shortcut icon" href="{% static 'img/logo.ico' %}" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <style>
-        .navbar-item img {
-            width: 70px;
-            height: 70px;
-            object-fit: cover;
-            overflow: hidden;
-        }
-        .empty-btn{
-          border: none;
-          outline: none;
-          background: transparent;
-        }
-        .main{
-            min-height: 100vh;
-            width: 100%;
-            overflow: hidden;
-            background-image: url("{% static 'img/bgstart.png' %}");
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-        }
-        .locale{
-            text-align: center;
-        }
-        .locale-form{
-            text-align: center;
-        }
-        form li {
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/users/home.css' %}">
     {% block styles %}
+    <style>
+      .main{
+        min-height: 100vh;
+        width: 100%;
+        overflow: hidden;
+        background-image: url("{% static 'img/bgstart.png' %}");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+    </style>
     {% endblock styles %}
   </head>
   <body id="google_translate_element">
@@ -55,7 +36,7 @@
           <div class="collapse navbar-collapse" id="navbarDark">
             <ul class="navbar-nav ms-auto me-2 mb-xl-0">
                <li class="nav-item">
-                    <a class="nav-link" href="#">Forbes</a>
+                    <a class="nav-link" href="{% url 'forbes' %}">Forbes</a>
                </li>
                {% if user.is_authenticated %}
                     <li class="nav-item dropdown">
@@ -85,7 +66,7 @@
             {% if user.is_authenticated %}
                 <div class="position-absolute top-50 start-50 translate-middle">
                     {% if user.role %}
-                      <a class="btn btn-outline-light btn-lg" href="{% url 'main_loc' %}">{% trans "Почати гру" %}</a>
+                      <a class="btn btn-outline-light btn-lg" href="{% url 'start' %}">{% trans "Почати гру" %}</a>
                     {% else %}
                       <a class="btn btn-outline-light btn-lg" href="{% url 'select_class' %}">{% trans "Почати гру" %}</a>
                     {% endif %}

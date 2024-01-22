@@ -32,6 +32,8 @@ ALLOWED_HOSTS = ['*']
 
 ENVIRONMENT = os.environ.get('ENVIRONMENT', default='development')
 
+PROTOCOL = 'http'
+
 if ENVIRONMENT == 'production':
     SECURE_BROWSER_XSS_FILTER = True
     X_FRAME_OPTIONS = 'DENY'
@@ -42,6 +44,7 @@ if ENVIRONMENT == 'production':
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SESSION_COOKIE_SECURE = True 
     CSRF_COOKIE_SECURE = True
+    PROTOCOL = 'https'
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https') 
 
 # Application definition
@@ -55,6 +58,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+
+    'debug_toolbar',
 
     'django_cleanup.apps.CleanupConfig',
 
@@ -70,6 +75,10 @@ INSTALLED_APPS = [
     'game.apps.GameConfig'
 ]
 
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -77,10 +86,12 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'game.middleware.EffectMiddleware',
 ]
 
 ROOT_URLCONF = 'settings.urls'
@@ -155,7 +166,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -178,23 +189,27 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
 ]
 
-STAT_SCALE = 0.4
+STAT_SCALE = 0.3
+MAIN_STAT_SCALE = 0.6
 
 ROLES = {
     "strength": {
-        "dmg": 0,
-        "hp": STAT_SCALE,
-        "double_dmg": False
+        "dmg": STAT_SCALE,
+        "hp": 3,
+        "double_dmg": False,
+        "img": "strength.png"
     },
     "agility": {
-        "dmg": STAT_SCALE,
-        "hp": 0,
-        "double_dmg": False
+        "dmg": MAIN_STAT_SCALE,
+        "hp": STAT_SCALE,
+        "double_dmg": False,
+        "img": "agility.png"
     },
     "shooter": {
-        "dmg": STAT_SCALE,
-        "hp": 0,
-        "double_dmg": True
+        "dmg": MAIN_STAT_SCALE,
+        "hp": STAT_SCALE,
+        "double_dmg": True,
+        "img": "archer.png"
     }
 }
 
@@ -208,7 +223,7 @@ ACCOUNT_SIGNUP_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT = 'home'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_FORMS = {'signup': 'users.forms.CustomUserCreationFormAccount','reset_password_from_key': 'users.forms.CustomResetPasswordKeyForm', 'login': 'users.forms.CustomLoginForm', 'reset_password':'users.forms.CustomResetPassword'}
+ACCOUNT_FORMS = {'signup': 'users.forms.CustomUserCreationFormAccount', 'change_password':'users.forms.CustomChangePasswordForm', 'reset_password_from_key': 'users.forms.CustomResetPasswordKeyForm', 'login': 'users.forms.CustomLoginForm', 'reset_password':'users.forms.CustomResetPassword'}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_FORMS = {'signup': 'users.forms.CustomUserCreationForm'}
 SOCIALACCOUNT_PROVIDERS = {

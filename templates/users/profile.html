@@ -8,7 +8,7 @@
 {% block head_title %}{% trans "Реєстрація" %}{% endblock %}
 
 {% block main %}
-<div class="w-100 p-3 d-flex flex-direction-column align-items-center justify-content-center">
+<div class="w-100 p-3 d-flex flex-column align-items-center justify-content-center gap-5">
     <div class="p-3 rounded bg-dark" style="max-width:750px;width:100%;">
         <div class="text-center">
             <h1>{% trans "Ваш профіль" %}</h1>
@@ -22,7 +22,7 @@
                 {{ form|crispy }}
                 <div><button type="submit" class="btn btn-outline-light">{% trans "Зберегти зміни" %}</button></div>
             </form>
-            {% if user.email_verified %}    
+            {% if email_verified %}    
                 <div class="rounded p-3">{% trans "Email: активовано" %}</div>
             {% else %}
                 <div class="p-3">
@@ -31,6 +31,14 @@
                 </div>
             {% endif %}
             <div class="w-100 mt-3"><a class="btn btn-danger" href="{% url 'profile_del' %}">{% trans "Видалити аккаунт" %}</a></div>
+        </div>
+    </div>
+    <div class="p-3 rounded bg-dark" style="max-width:350px;width:100%;">
+        <div class="text-center">
+            <h1>{% trans "Зміна паролю" %}</h1>
+        </div>
+        <div class="row">
+            <a href="{% url 'account_change_password' %}" class="btn btn-outline-light">{% trans "Змінити пароль" %}</a>
         </div>
     </div>
 </div>

@@ -1,0 +1,12 @@
+[
+    {
+        "model": "game.Effect",
+        "fields": {
+            "name": "Бог з тобою",
+            "desc": "Посилення спритності первонажа",
+            "is_church_ef": true,
+            "agility": 4,
+            "strength": 0
+        }
+    }
+]
