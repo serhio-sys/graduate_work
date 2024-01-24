@@ -5,8 +5,8 @@ from django.views.generic import View, ListView
 from django.utils import translation
 from django.http import HttpRequest, JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import ChoiceLanguageForm, UserUpdateForm
 from django.contrib.auth import get_user_model
+from .forms import ChoiceLanguageForm, UserUpdateForm
 
 
 class SetLocale(View):
@@ -31,7 +31,9 @@ class ProfileEdit(LoginRequiredMixin, View):
                       context={'form': form, 'email_verified': email_verified})
 
     def post(self, request: HttpRequest):
-        form = UserUpdateForm(data=request.POST, email_verified=request.user.email_verified(), instance=request.user)
+        form = UserUpdateForm(data=request.POST, 
+                              email_verified=request.user.email_verified(), 
+                              instance=request.user)
         if form.is_valid():
             upd = form.save(request=request, commit=False)
             upd.user = request.user
@@ -45,7 +47,8 @@ class ProfileEdit(LoginRequiredMixin, View):
 class ForbesView(ListView):
     paginate_by = 3
     model = get_user_model()
-    queryset = get_user_model().objects.filter(role__isnull=False).select_related('weapon2_equiped').select_related(
+    queryset = get_user_model().objects.filter(role__isnull=False)\
+        .select_related('weapon2_equiped').select_related(
         'weapon_equiped').order_by('-balance', '-lvl')
     template_name = "users/forbes.html"
 

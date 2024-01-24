@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
@@ -8,13 +9,12 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, JsonResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
-from .services import get_select_classview, get_with_user_context, post_select_classview, get_inventory_classview, \
+from django.conf import settings
+from .services import get_select_classview, get_with_user_context,\
+    post_select_classview, get_inventory_classview, \
     post_church, post_equip_armor, post_equip_weapon, get_buy_armor, get_buy_weapon
 from .models import Weapon, Armor
 from .forms import UserIncreaseStatsForm
-from django.conf import settings
-
-import json
 
 
 @login_required
@@ -150,21 +150,12 @@ class AbilitiesView(LoginRequiredMixin, View):
             response = get_with_user_context(request=request, template_name=self.template_name)
             response.context_data.update({"form": UserIncreaseStatsForm(instance=request.user)})
             return response.render()
-        else:
-            response.context_data.update({"form": form})
-            return response.render()
+        response.context_data.update({"form": form})
+        return response.render()
 
 
 class DungeonEnterenceView(LoginRequiredMixin, View):
     template_name = "game/dungeon/dungeon.html"
-    map_data = []
-
-    def get_start_points(self) -> list[int]:
-        for i in range(len(self.map_data)):
-            for j in range(len(self.map_data[i])):
-                if self.map_data[i][j] == 2:
-                    return [i, j]
-        raise Exception("Not found point 2 in map")
 
     def get(self, request: HttpRequest):
         return get_with_user_context(request=request, template_name=self.template_name).render()
@@ -176,11 +167,11 @@ class DungeonView(LoginRequiredMixin, View):
     x, y = 0, 0
 
     def get_start_points(self) -> list[int]:
-        for i in range(len(self.map_data)):
-            for j in range(len(self.map_data[i])):
+        for i in enumerate(self.map_data):
+            for j in enumerate(self.map_data[i]):
                 if self.map_data[i][j] == 2:
                     return [i, j]
-        raise Exception("Not found point 2 in map")
+        return [0, 2]
 
     def get_point_reverse(self, x: int, y: int) -> str:
         if x < 0 or y < 0:
@@ -197,10 +188,10 @@ class DungeonView(LoginRequiredMixin, View):
 
     def initial_points(self, request: HttpRequest) -> bool:
         leave = False
-        with open(settings.BASE_DIR + request.user.dungeon.map.url, 'r') as f:
+        with open(settings.BASE_DIR + request.user.dungeon.map.url, 'r', encoding='utf-8') as f:
             self.map_data = json.load(f)
-        self.x, self.y = int(request.GET.get("x", request.session.get("x", 0))), int(
-            request.GET.get("y", request.session.get("y", 0)))
+        self.x, self.y = int(request.GET.get("x", request.session.get("x", 0))),\
+                         int(request.GET.get("y", request.session.get("y", 0)))
         if self.map_data[self.x][self.y] == 0:
             points = self.get_start_points()
             self.x, self.y = points[0], points[1]
@@ -211,9 +202,12 @@ class DungeonView(LoginRequiredMixin, View):
 
     def get_based_response(self, request: HttpRequest) -> TemplateResponse:
         can_leave = self.initial_points(request=request)
-        response = get_with_user_context(request=request, template_name=self.template_name)
-        moves = {"a": self.get_point_reverse(self.x + 1, self.y), "l": self.get_point_reverse(self.x, self.y + 1),
-                 "r": self.get_point_reverse(self.x, self.y - 1), "b": self.get_point_reverse(self.x - 1, self.y)}
+        response = get_with_user_context(request=request,
+                                         template_name=self.template_name)
+        moves = {"a": self.get_point_reverse(self.x + 1, self.y),
+                 "l": self.get_point_reverse(self.x, self.y + 1),
+                 "r": self.get_point_reverse(self.x, self.y - 1), 
+                 "b": self.get_point_reverse(self.x - 1, self.y)}
         response.context_data.update(moves)
         response.context_data['map'] = self.map_data
         response.context_data['can_leave'] = can_leave

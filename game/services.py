@@ -1,3 +1,6 @@
+import datetime
+import json
+import random
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.template.response import TemplateResponse
 from django.contrib.auth import get_user_model
@@ -7,14 +10,10 @@ from django.utils.translation import gettext_lazy as _
 from django.forms import model_to_dict
 from .models import Weapon, Armor, Effect
 
-import datetime
-import json
-import random
-
 
 def get_with_user_context(request: HttpRequest, template_name: str) -> TemplateResponse:
-    user = get_user_model().objects.select_related('weapon2_equiped', 'weapon_equiped', 'dungeon').get(
-        pk=request.user.pk)
+    user = get_user_model().objects.select_related('weapon2_equiped', 'weapon_equiped', 'dungeon')\
+        .get(pk=request.user.pk)
     return TemplateResponse(request=request, template=template_name, context={'user': user})
 
 
@@ -62,12 +61,10 @@ def post_equip_weapon(request: HttpRequest) -> JsonResponse:
             request.user.weapon_equiped = None
             request.user.save()
             return JsonResponse("success", safe=False, status=200)
-        elif int(data.get('dequip')) == 2:
+        if int(data.get('dequip')) == 2:
             request.user.weapon2_equiped = None
             request.user.save()
             return JsonResponse("success", safe=False, status=200)
-        else:
-            return JsonResponse("error", safe=False, status=400)
     else:
         try:
             weapon = Weapon.objects.get(pk=data.get('pk'))
@@ -80,7 +77,7 @@ def post_equip_weapon(request: HttpRequest) -> JsonResponse:
         else:
             request.user.weapon_equiped = weapon
         request.user.save()
-        return JsonResponse("success", safe=False, status=200)
+    return JsonResponse("success", safe=False, status=200)
 
 
 def get_buy_armor(request: HttpRequest, pk: int) -> HttpResponse:
@@ -88,10 +85,13 @@ def get_buy_armor(request: HttpRequest, pk: int) -> HttpResponse:
     item = Armor.objects.get(pk=pk, user__isnull=True)
     kwargs = model_to_dict(item, exclude=['id'])
     if user.balance < item.balance:
-        return render(request, 'game/shop_err.html', context={"msg": _("Не вистачає коштів")})
+        return render(request, 'game/shop_err.html', 
+                      context={"msg": _("Не вистачає коштів")})
     user_armors = list(user.armor_set.values_list('name', flat=True).distinct())
     if item.name in user_armors:
-        return render(request, 'game/shop_err.html', context={"msg": _("Цей предмет вже є у вас в інвентарі.")})
+        return render(request, 
+                      'game/shop_err.html',
+                      context={"msg": _("Цей предмет вже є у вас в інвентарі.")})
     if item.lvl <= request.user.lvl and item.dun_lvl <= request.user.dungeon.lvl:
         user.balance -= item.balance
         new_armor = Armor(**kwargs)
@@ -106,10 +106,12 @@ def get_buy_weapon(request: HttpRequest, pk: int) -> HttpResponse:
     item = Weapon.objects.get(pk=pk, user__isnull=True)
     kwargs = model_to_dict(item, exclude=['id'])
     if user.balance < item.balance:
-        return render(request, 'game/shop_err.html', context={"msg": _("Не вистачає коштів")})
+        return render(request, 'game/shop_err.html', 
+                      context={"msg": _("Не вистачає коштів")})
     user_weapons = list(user.weapon_set.values_list('name', flat=True).distinct())
     if item.name in user_weapons:
-        return render(request, 'game/shop_err.html', context={"msg": _("Цей предмет вже є у вас в інвентарі.")})
+        return render(request, 'game/shop_err.html', 
+                      context={"msg": _("Цей предмет вже є у вас в інвентарі.")})
     if item.lvl <= request.user.lvl and item.dun_lvl <= request.user.dungeon.lvl:
         user.balance -= item.balance
         new_weapon = Weapon(**kwargs)
@@ -140,21 +142,25 @@ def get_select_classview(request: HttpRequest, template_name: str) -> HttpRespon
             "img": request.build_absolute_uri('/static/img/classes/agility.png'),
             "visual_name": _("Ловкач"),
             "desc": _(
-                "Головний атрибут: Спритність.\n Якщо супротивник дуже повільний і буде ловити гав, то є можливість зробити подвійну атаку.\n Особливість: можливість ухилитися від атаки та контр атакувати.")
+                "Головний атрибут: Спритність.\n Якщо супротивник дуже повільний і"
+                "буде ловити гав, то є можливість зробити подвійну атаку.\n Особливість:" 
+                "можливість ухилитися від атаки та контр атакувати.")
         },
         {
             "name": "strength",
             "img": request.build_absolute_uri('/static/img/classes/strength.png'),
             "visual_name": _("Силач"),
             "desc": _(
-                "Головний атрибут: Сила.\n Чим більша сила, тим більше болю може зазнати супротивник.\n Особливість: наносити тяжкі поранення.")
+                "Головний атрибут: Сила.\n Чим більша сила, тим більше"
+                "болю може зазнати супротивник.\n Особливість: наносити тяжкі поранення.")
         },
         {
             "name": "shooter",
             "img": request.build_absolute_uri('/static/img/classes/archer.png'),
             "visual_name": _("Стрілок"),
             "desc": _(
-                "Головний атрибут: Спритність.\n Герой завжди тримається на відстані й може зробити з супротивника решето.\n Особливість: дальній бій.")
+                "Головний атрибут: Спритність.\n Герой завжди тримається на відстані"
+                 " й може зробити з супротивника решето.\n Особливість: дальній бій.")
 
         }
     ]

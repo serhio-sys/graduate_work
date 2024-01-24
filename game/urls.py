@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import SelectClassView, DungeonView, DungeonEnemyView, DungeonEnterenceView, AbilitiesView, InventoryView, \
-    OutskirtsLocation, ChurchLocation, equip_armor, equip_weapon, buy_weapon, buy_armor, MainLocationView, \
+from .views import SelectClassView, DungeonView, DungeonEnemyView,\
+    DungeonEnterenceView, AbilitiesView, InventoryView, \
+    OutskirtsLocation, ChurchLocation, equip_armor, equip_weapon,\
+    buy_weapon, buy_armor, MainLocationView, \
     back_to_starter_page, CityLocation, get_start_game_page, ShopLocation
 
 urlpatterns = [

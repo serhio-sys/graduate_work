@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from django.core.management.utils import get_random_secret_key
-from dotenv import load_dotenv
 from django.utils.translation import gettext_lazy as _
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -223,7 +223,11 @@ ACCOUNT_SIGNUP_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT = 'home'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_FORMS = {'signup': 'users.forms.CustomUserCreationFormAccount', 'change_password':'users.forms.CustomChangePasswordForm', 'reset_password_from_key': 'users.forms.CustomResetPasswordKeyForm', 'login': 'users.forms.CustomLoginForm', 'reset_password':'users.forms.CustomResetPassword'}
+ACCOUNT_FORMS = {'signup': 'users.forms.CustomUserCreationFormAccount',
+                'change_password':'users.forms.CustomChangePasswordForm', 
+                'reset_password_from_key': 'users.forms.CustomResetPasswordKeyForm', 
+                'login': 'users.forms.CustomLoginForm', 
+                'reset_password':'users.forms.CustomResetPassword'}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_FORMS = {'signup': 'users.forms.CustomUserCreationForm'}
 SOCIALACCOUNT_PROVIDERS = {
@@ -244,6 +248,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
