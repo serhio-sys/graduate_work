@@ -42,11 +42,6 @@
                     </div>
                 </div>
                 <div class="mt-4">{% trans "Рахунок: " %} {{user.balance}} $</div>
-                {% if user.effect %}
-                    <div>{% trans "Ефект: " %}{{user.effect.name}}</div>
-                {% else %}
-                    <div>{% trans "Ефект: відсутній" %}</div>
-                {% endif %}
             </div>
             <div class="mt-5 d-flex flex-column gap-1" ondrop="drop_eq(event)" ondragover="allowDrop(event)">
                 {% if user.weapon_equiped %}

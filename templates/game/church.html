@@ -1,9 +1,11 @@
 {% extends "game/main.html" %}
 {% load i18n %}
+{% load static %}
 {% block head_title %}{% trans "Church Location" %}{% endblock %}
 {% block map %}
 <div class="navigation">
     <div class="map">
+        <img src="{% static 'img/locations/church_loc.jpg' %}" class="image_map"/>
     </div>
     <div class="d-flex gap-4 mt-3 justify-content-center">
         <a class="btn btn-warning" href="{% url 'city_loc' %}">{% trans "Вийти з церкви" %}</a>

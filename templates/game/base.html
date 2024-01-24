@@ -24,7 +24,7 @@
           <div class="collapse navbar-collapse" id="navbarDark">
             <ul class="navbar-nav ms-auto me-auto mb-xl-0">
                 <li class="nav-item dropdown">
-                    <a class="btn btn-info btn-sm me-1" href="">{% trans "Вміння" %}</a>
+                    <a class="btn btn-info btn-sm me-1" href="{% url 'abilities' %}?name={{request.resolver_match.url_name}}">{% trans "Навички" %}</a>
                     <a class="btn btn-info btn-sm me-5" href="{% url 'inventory' request.resolver_match.url_name %}">{% trans "Інвентар" %}</a>
                     <a href="{% url 'back_to_main' request.resolver_match.url_name %}" class="btn btn-outline-light btn-sm">Повернутися на головну</a>
                 </li>

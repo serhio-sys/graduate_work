@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 import datetime
 
+
 class EffectMiddleware:
 
     def __init__(self, get_response):

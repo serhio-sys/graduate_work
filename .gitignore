@@ -1,4 +1,5 @@
 .sqlite3
 media
 .env
+.idea
 site-packages
