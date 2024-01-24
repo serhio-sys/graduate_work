@@ -23,5 +23,12 @@ jobs:
         pip install -r requirements.txt
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py') --ignore-patterns="game/models.py|users/models.py|game/migrations|users/migrations|users/__init__.py|game/__init__.py|settings/settings.py" --disable=C0114,C0115,C0116,C0303,R0903,E1101
-
+        find . -name "*.py" \
+          -not -path "./game/models.py" \
+          -not -path "./users/models.py" \
+          -not -path "./game/migrations/*" \
+          -not -path "./users/migrations/*" \
+          -not -path "./users/__init__.py" \
+          -not -path "./game/__init__.py" \
+          -not -path "./settings/settings.py" \
+          | xargs pylint --disable=C0114,C0115,C0116,C0303,R0903,E1101
