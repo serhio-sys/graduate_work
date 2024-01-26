@@ -2,18 +2,51 @@
     {
         "model": "game.Enemy",
         "fields": {
-            "name": "",
-            "health": "",
-            "attack": "",
-            "defence": "",
-            "agility": "",
-            "strength": "",
-            "lvl": "",
-            "role": "",
-            "slug": "",
-            "img": "",
-            "weapon": "",
-            "armor": "",
+            "name": "Enemy_1_dungeon",
+            "health": 100,
+            "attack": 6,
+            "defence": 3,
+            "agility": 2,
+            "strength": 2,
+            "lvl": 1,
+            "role": "agility",
+            "img": "1.jpg",
+            "weapon_equiped": null,
+            "armor_equiped": null,
+            "dungeon": 1
+        }
+    },
+    {
+        "model": "game.Enemy",
+        "fields": {
+            "name": "Enemy_1_dungeon",
+            "health": 100,
+            "attack": 5,
+            "defence": 2,
+            "agility": 2,
+            "strength": 6,
+            "lvl": 1,
+            "role": "strength",
+            "img": "2.jpg",
+            "weapon_equiped": null,
+            "armor_equiped": null,
+            "dungeon": 1
+        }
+    },
+    {
+        "model": "game.Enemy",
+        "fields": {
+            "name": "Enemy_1_dungeon",
+            "health": 100,
+            "attack": 10,
+            "defence": 0,
+            "agility": 4,
+            "strength": 1,
+            "lvl": 1,
+            "role": "shooter",
+            "img": "3.jpg",
+            "weapon_equiped": null,
+            "armor_equiped": null,
             "dungeon": 1
         }
     }

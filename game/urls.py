@@ -3,7 +3,8 @@ from .views import SelectClassView, DungeonView, DungeonEnemyView,\
     DungeonEnterenceView, AbilitiesView, InventoryView, \
     OutskirtsLocation, ChurchLocation, equip_armor, equip_weapon,\
     buy_weapon, buy_armor, MainLocationView, \
-    back_to_starter_page, CityLocation, get_start_game_page, ShopLocation
+    back_to_starter_page, CityLocation, get_start_game_page, ShopLocation,\
+    FightView, FightResultsView
 
 urlpatterns = [
     path('', SelectClassView.as_view(), name='select_class'),
@@ -16,6 +17,8 @@ urlpatterns = [
     path('church/', ChurchLocation.as_view(), name='church_loc'),
     path('abilities/', AbilitiesView.as_view(), name='abilities'),
     path('dungeon_enterence/', DungeonEnterenceView.as_view(), name='dungeon_loc'),
+    path('fight-results/', FightResultsView.as_view(), name='fight_results'),
+    path('fight/', FightView.as_view(), name='fight'),
     path('dungeon/', DungeonView.as_view(), name='dungeon'),
     path('dungeon/enemy/', DungeonEnemyView.as_view(), name='dungeon_enemy'),
     path('buy_weapon/<pk>', buy_weapon, name='buy_w'),

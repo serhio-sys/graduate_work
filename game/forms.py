@@ -31,3 +31,11 @@ class UserIncreaseStatsForm(forms.ModelForm):
         model = get_user_model()
         fields = ['agility', 'strength', 'upgrade_points']
         
+
+class AttackForm(forms.Form):
+    choise = [("head",_("Голова")),
+            ("body",_("Тіло")),
+            ("legs",_("Ноги"))]
+    
+    attack = forms.CharField(label=_("Атака"),widget=forms.RadioSelect(choices=choise))
+    defence = forms.CharField(label=_("Захист"),widget=forms.RadioSelect(choices=choise))

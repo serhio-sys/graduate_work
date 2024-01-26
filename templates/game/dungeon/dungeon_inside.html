@@ -31,24 +31,24 @@
     </div>
     <div>
         {% if a %}
-        <a href="{{a}}" class="btn btn-warning btn-sm">^</a>
+        <a href="{{a}}" class="btn btn-warning btn-sm">v</a>
         {% else %}
-        <a class="disable btn btn-outline-dark btn-sm">^</a>
+        <a class="disable btn btn-outline-dark btn-sm">v</a>
         {% endif %}
-        {% if l %}
-        <a href="{{l}}" class="btn btn-warning btn-sm"><</a>
+        {% if r %}
+        <a href="{{r}}" class="btn btn-warning btn-sm"><</a>
         {% else %}
         <a class="disable btn btn-outline-dark btn-sm"><</a>
         {% endif %}
-        {% if r %}
-        <a href="{{r}}" class="btn btn-warning btn-sm">></a>
+        {% if l %}
+        <a href="{{l}}" class="btn btn-warning btn-sm">></a>
         {% else %}
         <a class="disable btn btn-outline-dark btn-sm">></a>
-        {% endif %}
+        {% endif %}    
         {% if b %}
-        <a href="{{b}}" class="btn btn-warning btn-sm">v</a>
+        <a href="{{b}}" class="btn btn-warning btn-sm">^</a>
         {% else %}
-        <a class="disable btn btn-outline-dark btn-sm">v</a>
+        <a class="disable btn btn-outline-dark btn-sm">^</a>
         {% endif %}
     </div>
     {% if can_leave %}

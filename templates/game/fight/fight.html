@@ -1,0 +1,277 @@
+{% extends "game/base.html" %}
+{% load static %}
+{% load crispy_forms_filters %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'css/game/main.css' %}">
+{% endblock %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Fight" %}{% endblock %}
+
+{% block main %}
+{% if error %}
+<div class="message">
+    <h1>{{error}}</h1>
+</div>
+{% endif %}
+<div class="w-100 h-100 p-3 d-flex flex-column justify-content-between">
+    <div class="d-flex justify-content-between h-100">
+        <div class="hero d-flex gap-2">
+            <div>
+                <div class="hero_health and name">
+                    <div>
+                        {{user.username}} [{{user.check_exp}}]
+                    </div>
+                    <div class="progress mt-1" style="height: 15px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{user.exp}}%;" aria-valuenow="{{user.exp}}" aria-valuemin="0" aria-valuemax="100">{% trans "досвід:" %}{{user.exp}}</div>
+                    </div>
+                </div>
+                <div class="mt-1 hero_img_block">
+                    <img src="{{user.get_class_img}}" class="hero_img"/>
+                    <div class="hero_stats">
+                        <div>{% trans "Характеристики" %}</div>
+                        {% with user.get_summary_damage as dmg %}
+                        <div class="mt-2">{% trans "Атака: " %} {{dmg.total}} ({{dmg.hero}}+{{dmg.bonus}})</div>
+                        {% endwith %}
+                        <div>{% trans "Захист: " %} {{user.return_all_armor}} ({{user.defence}}{% if user.armor_equiped is not None %}+{{user.armor_equiped.armor}}{% endif %})</div>
+                        {% with effects as stats %}
+                        <div class="user_str">{% trans "Сила: " %} {{stats.str.total}} ({{stats.str.hero}}{% if stats.str.sum >= 0 %}+{{stats.str.sum}}{% else %}{{stats.str.sum}}{% endif %})</div>
+                        <div class="user_ag">{% trans "Спритність: " %} {{stats.ag.total}} ({{stats.ag.hero}}{% if stats.ag.sum >= 0 %}+{{stats.ag.sum}}{% else %}{{stats.ag.sum}}{% endif %})</div>
+                    </div>
+                </div>
+                <div class="hero_health">
+                    <div class="progress mt-2" style="height: 15px;">
+                        <div class="user_hp progress-bar bg-danger" role="progressbar" style="width: {{user.get_current_hp}}%;" aria-valuenow="{{user.get_current_hp}}" aria-valuemin="0" aria-valuemax="{{user.get_max_hp}}">{% trans "здоров'я:" %}{{user.get_current_hp}}</div>
+                    </div>
+                </div>
+                <div class="mt-4">{% trans "Рахунок: " %} {{user.balance}} $</div>
+                <div class="effects mt-3">
+                    <div class="btn btn-light btn-sm effects-btn">{% trans "Ефекти" %}</div>
+                    <div class="effects_info user_effects">
+                        {% if stats.effects %}
+                            {% for effect in stats.effects %}
+                            <span>{{effect.name}}: {{effect.desc}} | {{effect.deleted_time|date:"H:i:s" }}</span><br>
+                            {% endfor %}
+                        {% else %}
+                            <span>{% trans "Немає жодних ефектів накладених на героя." %}</span>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 d-flex flex-column gap-1">
+                {% if user.weapon_equiped %}
+                    <img src="{{user.weapon_equiped.img.url}}" width="85px" height="85px"/>
+                {% else %}
+                    <div class="empty_img"></div>
+                {% endif %}
+                {% if user.weapon2_equiped %}
+                    {% if user.weapon_equiped %}
+                        <img src="{{user.weapon2_equiped.img.url}}" width="85px" height="85px"/>
+                    {% else %}
+                        <div class="empty_img"></div>
+                    {% endif %}
+                {% else %}
+                    {% if user.armor_equiped %}
+                        <img src="{{user.armor_equiped.img.url}}" width="85px" height="85px"/>
+                    {% else %}
+                        <div class="empty_img"></div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="m-4 p-2 d-flex w-100 h-100 flex-column justify-content-center align-items-center">
+            <div style="width: 300px; height: 200px;" class="rounded bg-dark d-flex justify-content-center align-items-center">
+                <div>
+                    <form method="post" class="attack_form w-100 d-flex flex-column align-items-center gap-2">
+                        {% csrf_token %}
+                        <div class="d-flex gap-5">
+                            {{ form|crispy }}
+                        </div>
+                        <button type="submit">{% trans 'Вперед' %}</button>
+                    </form>
+                </div>
+            </div>
+            <div class="w-100">
+                <hr>
+                <div class="logs">
+                    <h1 class="text-center">{% trans "Логи бою" %}</h1>
+                    <div class="logs_chat p-4 overflow-auto" style="height: 200px;">
+                        {% for log in request.session.logs %}
+                        <span>{{log}}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <hr>
+            </div>
+        </div>
+        <div class="hero d-flex flex-row-reverse gap-2">
+            <div>
+                <div class="hero_health and name">
+                    <div>
+                        {{enemy.name}} [{{enemy.lvl}}]
+                    </div>
+                </div>
+                <div class="mt-1 hero_img_block">
+                    <img src="{{enemy.get_img_url}}" class="hero_img"/>
+                    <div class="hero_stats">
+                        <div>{% trans "Характеристики" %}</div>
+                        {% with enemy.get_summary_damage as dmg %}
+                        <div class="mt-2">{% trans "Атака: " %} {{dmg.total}} ({{dmg.hero}}+{{dmg.bonus}})</div>
+                        {% endwith %}
+                        <div>{% trans "Захист: " %} {{user.return_all_armor}} ({{user.defence}}{% if user.armor_equiped is not None %}+{{user.armor_equiped.armor}}{% endif %})</div>
+                        {% with enemy_effects as stats %}
+                        <div class="str_enemy">{% trans "Сила: " %} {{stats.str.total}} ({{stats.str.hero}}{% if stats.str.sum >= 0 %}+{{stats.str.sum}}{% else %}{{stats.str.sum}}{% endif %})</div>
+                        <div class="ag_enemy">{% trans "Спритність: " %} {{stats.ag.total}} ({{stats.ag.hero}}{% if stats.ag.sum >= 0 %}+{{stats.ag.sum}}{% else %}{{stats.ag.sum}}{% endif %})</div>
+                    </div>
+                </div>
+                <div class="hero_health">
+                    <div class="progress mt-2" style="height: 15px;">
+                        <div class="enemy_hp progress-bar bg-danger" role="progressbar" style="width: {{enemy.health}}%;" aria-valuenow="{{enemy.health}}" aria-valuemin="0" aria-valuemax="100">{% trans "здоров'я:" %}{{enemy.health}}</div>
+                    </div>
+                </div>
+                <div class="effects mt-3">
+                    <div class="btn btn-light btn-sm effects-btn">{% trans "Ефекти" %}</div>
+                    <div class="effects_info enemy_effects">
+                        {% if stats.effects %}
+                            {% for effect in stats.effects %}
+                            <span>{{effect.name}}: {{effect.desc}} | {{effect.deleted_time|date:"H:i:s" }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span>{% trans "Немає жодних ефектів накладених на героя." %}</span>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 d-flex flex-column gap-1">
+                {% if enemy.weapon_equiped %}
+                    <img src="{{enemy.weapon_equiped.img.url}}" width="85px" height="85px"/>
+                {% else %}
+                    <div class="empty_img"></div>
+                {% endif %}
+                {% if enemy.weapon2_equiped %}
+                    {% if user.weapon_equiped %}
+                        <img src="{{enemy.weapon2_equiped.img.url}}" width="85px" height="85px"/>
+                    {% else %}
+                        <div class="empty_img"></div>
+                    {% endif %}
+                {% else %}
+                    {% if enemy.armor_equiped %}
+                        <img src="{{enemy.armor_equiped.img.url}}" width="85px" height="85px"/>
+                    {% else %}
+                        <div class="empty_img"></div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% block map %}
+        
+        {% endblock %}
+    </div>
+    {% block location %}
+    
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    var csrftoken = "{{csrf_token}}"
+    var enemy_effects = document.querySelector('.enemy_effects')
+    var user_effects = document.querySelector('.user_effects')
+    
+    var enemy_hp = document.querySelector('.enemy_hp')
+    var user_hp = document.querySelector('.user_hp')
+
+    
+    var enemy_str = document.querySelector('.str_enemy')
+    var user_str = document.querySelector('.user_str')
+    var enemy_ag = document.querySelector('.ag_enemy')
+    var user_ag = document.querySelector('.user_ag')
+
+    var logs_chat = document.querySelector('.logs_chat')
+    //user_hp
+    //enemy_hp
+    //user_str
+    //user_ag
+    //user_effects
+    //logs_chat
+    //str_enemy
+    //ag_enemy //rewrite
+    //enemy_effects 
+    //attack_form
+    function SetEffects(enemy, user) {
+        enemy_str.innerHTML = `{% trans "Сила: " %} ${enemy.str.total} (${enemy.str.hero}${enemy.str.sum >= 0 ? "+"+enemy.str.sum : enemy.str.sum})`
+        enemy_ag.innerHTML = `{% trans "Спритність: " %} ${enemy.ag.total} (${enemy.ag.hero}${enemy.ag.sum >= 0 ? "+"+enemy.ag.sum : enemy.ag.sum})`
+        user_str.innerHTML = `{% trans "Сила: " %} ${user.str.total} (${user.str.hero}${user.str.sum >= 0 ? "+"+user.str.sum : user.str.sum})`
+        user_ag.innerHTML = `{% trans "Спритність:: " %} ${user.ag.total} (${user.ag.hero}${user.ag.sum >= 0 ? "+"+user.ag.sum : user.ag.sum})`
+        
+        var user_effects_txt = ""
+        var enemy_effects_txt = ""
+
+        if (enemy.effects.length > 0) {
+            enemy.effects.forEach(item => {
+                enemy_effects_txt += `<span>${item.name}: ${item.desc} | ${item.deleted_time}</span><br>`
+            })
+        } else {
+            enemy_effects_txt = '<span>{% trans "Немає жодних ефектів накладених на героя." %}</span>'
+        }
+        if (user.effects.length > 0) {
+            user.effects.forEach(item => {
+                user_effects_txt += `<span>${item.name}: ${item.desc} | ${item.deleted_time}</span><br>`
+            })
+        } else {
+            user_effects_txt = '<span>{% trans "Немає жодних ефектів накладених на героя." %}</span>'
+        }
+
+        user_effects.innerHTML = user_effects_txt
+        enemy_effects.innerHTML = enemy_effects_txt
+    }
+    function SetHp(user_health, enemy_health) {
+        user_hp.innerHTML = `{% trans "здоров'я:" %} ${user_health}`
+        user_hp.ariaValueNow = user_health
+        user_hp.style.width = `${user_health}%`
+        
+        enemy_hp.innerHTML = `{% trans "здоров'я:" %} ${enemy_health}`
+        enemy_hp.ariaValueNow = enemy_health
+        enemy_hp.style.width = `${enemy_health}%`
+    }
+    function AddLog(logs) {
+        var add_text = ""
+        logs.forEach(item => {
+            add_text += `<span>${item}</span><br>`
+        })
+        logs_chat.innerHTML += add_text
+        logs_chat.scrollTop = logs_chat.scrollHeight
+    }
+
+    document.querySelector('.attack_form').addEventListener('submit', async (e) => {
+        e.preventDefault()
+        var attack_data = e.target.elements['attack'].value
+        var defence_data = e.target.elements['defence'].value
+        var formData = new FormData();
+
+        formData.append('attack', attack_data);
+        formData.append('defence', defence_data);
+        await fetch("{{request.path}}", {
+            method: "POST",
+            headers: {'X-CSRFToken': csrftoken}, 
+            body: formData
+        }).then(res => res.json())
+        .then(data => {
+            if (data.winner === false){
+                window.location.replace(data.redirect_url)
+            }
+            else if (data.winner === true){
+                window.location.replace(data.redirect_url)
+            }
+            SetEffects(data.enemy_stats, data.user_stats)
+            SetHp(data.user_hp, data.enemy_hp)
+            AddLog(data.log)
+            console.log(data)
+        });
+    })
+</script>
+{% endblock %}

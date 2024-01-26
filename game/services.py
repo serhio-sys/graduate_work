@@ -6,6 +6,7 @@ from django.template.response import TemplateResponse
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.forms import model_to_dict
 from .models import Weapon, Armor, Effect
@@ -174,3 +175,60 @@ def post_select_classview(request: HttpRequest):
     else:
         return redirect('select_class')
     return redirect('main_loc')
+
+
+class BasedDungeon:
+    def __init__(self) -> None:
+        self.map_data = []
+        self.x, self.y = 0, 0
+
+    def get_start_points(self) -> list[int]:
+        for i in enumerate(self.map_data):
+            for j in range(len(i[1])):
+                if self.map_data[i[0]][j] == 2:
+                    return [i[0], j]
+        return [0, 2]
+
+    def get_point_reverse(self, x: int, y: int) -> str:
+        if x < 0 or y < 0:
+            return None
+        try:
+            if self.map_data[x][y] == 1 or self.map_data[x][y] == 2:
+                return reverse("dungeon") + f"?x={x}&y={y}"
+            if self.map_data[x][y] == 3:
+                return reverse("dungeon_tresure") + f"?x={x}&y={y}"
+            if self.map_data[x][y] == 4:
+                return reverse("dungeon_enemy") + f"?x={x}&y={y}"
+            if self.map_data[x][y] == 5:
+                return reverse("dungeon_boss") + f"?x={x}&y={y}"
+        except IndexError:
+            pass
+        return None
+
+    def initial_points(self, request: HttpRequest) -> bool:
+        leave = False
+        with open(settings.BASE_DIR + request.user.dungeon.map.url, 'r', encoding='utf-8') as f:
+            self.map_data = json.load(f)
+        self.x, self.y = int(request.GET.get("x", request.session.get("x", 0))),\
+                         int(request.GET.get("y", request.session.get("y", 0)))
+        if self.map_data[self.x][self.y] == 0:
+            points = self.get_start_points()
+            self.x, self.y = points[0], points[1]
+        if self.map_data[self.x][self.y] == 2:
+            leave = True
+        self.map_data[self.x][self.y] = 6
+        return leave
+
+    def get_based_response(self, request: HttpRequest) -> TemplateResponse:
+        can_leave = self.initial_points(request=request)
+        response = get_with_user_context(request=request,
+                                         template_name=self.template_name)
+        moves = {"a": self.get_point_reverse(self.x + 1, self.y),
+                 "l": self.get_point_reverse(self.x, self.y + 1),
+                 "r": self.get_point_reverse(self.x, self.y - 1), 
+                 "b": self.get_point_reverse(self.x - 1, self.y)}
+        response.context_data.update(moves)
+        response.context_data['map'] = self.map_data
+        response.context_data['can_leave'] = can_leave
+        request.session["x"], request.session["y"] = self.x, self.y
+        return response

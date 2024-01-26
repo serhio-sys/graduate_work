@@ -1,12 +1,11 @@
 import random
-import datetime
+from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 from allauth.account.models import EmailAddress
 from game.models import Enemy
 #from django.urls import reverse
-
 
 
 class NewUser(AbstractUser):
@@ -60,6 +59,9 @@ class NewUser(AbstractUser):
                               blank=True,
                               on_delete=models.SET_NULL)
 
+    def get_name(self):
+        return self.username
+
     def email_verified(self):
         return EmailAddress.objects.filter(user=self, verified=True).exists()
 
@@ -68,12 +70,10 @@ class NewUser(AbstractUser):
         return url + "/static/img/classes/" + settings.ROLES[self.role]['img']
 
     def get_max_hp(self):
-        bonus = settings.ROLES[self.role]['hp']
-        return 100 + (self.strength * bonus)
+        return 100
 
     def get_current_hp(self):
-        bonus = settings.ROLES[self.role]['hp']
-        return self.health + (self.strength * bonus)
+        return self.health
 
     def return_all_damage(self):
         bonus = settings.ROLES[self.role]['dmg']
@@ -106,25 +106,23 @@ class NewUser(AbstractUser):
     def get_summary_stats(self) -> dict:
         total_str = self.strength
         total_ag = self.agility
-        effects = self.effect_set.all()
-        effects_to_delete = [effect for effect in effects\
-                            if effect.deleted_time <= datetime.datetime.now()]
 
-        for effect in effects_to_delete:
-            effect.delete()
-        active_effects = [effect for effect in effects if effect not in effects_to_delete]
-        sum_str = sum(effect.strength for effect in active_effects)
-        sum_ag = sum(effect.agility for effect in active_effects)
+        current_time = timezone.now()
+        self.effect_set.filter(models.Q(deleted_time__lte=current_time)).delete()
+        active_effects = self.effect_set.filter(deleted_time__gt=current_time).values()
+
+        sum_str = sum(effect['strength'] for effect in active_effects)
+        sum_ag = sum(effect['agility'] for effect in active_effects)
 
         return {
             "str": {"hero": total_str, 
                     "sum": sum_str, 
-                    "total": total_str + sum_str if total_str + sum_str >= 0 else 0},
+                    "total": max(total_str + sum_str, 0)},
             "ag": {"hero": total_ag, 
-                   "sum": sum_ag, 
-                   "total": total_ag + sum_ag if total_ag + sum_ag >= 0 else 0},
-            "effects": active_effects
-            }
+                "sum": sum_ag, 
+                "total": max(total_ag + sum_ag, 0)},
+            "effects": list(active_effects)
+        }
 
     def check_exp(self):
         if self.lvl >= 99 and self.exp > 99:
@@ -139,44 +137,16 @@ class NewUser(AbstractUser):
                 self.save(update_fields=['lvl', 'exp', 'upgrade_points'])
         return self.lvl
 
-    # def get_absolute_url(self):
-    #    return reverse("del", kwargs={"pk": self.pk})
-
-    # def get_absolute_url_upd(self):
-    #    return reverse("upd", kwargs={"pk": self.pk})
-
-    # def get_absolute_url_sleep(self):
-    #    return reverse("sleeping", kwargs={"pk": self.pk})
-
-    # def get_absolute_url_fight(self):
-    #    return reverse("fight", kwargs={"pk": self.pk})
-
-    # def get_absolute_url_bossfight(self):
-    #    return reverse("bossfight", kwargs={"pk": self.pk})
-
-    # def get_absolute_url_bossfight_st(self):
-    #    return reverse("bossfight_st", kwargs={"pk": self.pk})
-
-    # def get_absolute_url_urs(self):
-    #    return reverse("user", kwargs={"pk": self.pk})
-
-    # def __str__(self):
-    #    return self.username
-
-
-def return_all_health(obj: NewUser | Enemy) -> int:
-    bonus = settings.ROLES[obj.role]['hp']
-    return obj.health + (obj.strength * bonus)
-
 
 def return_all_damage_taken(obj: NewUser | Enemy) -> int:
-    bonus = settings.ROLES[obj.role]['dmg']
-    if obj.weapon_equiped is None:
-        attack = obj.attack + (bonus * obj.agility)
-    else:
-        attack = obj.attack + (bonus * obj.agility) + obj.weapon_equiped.damage
+    bonus = round(settings.ROLES[obj.role]['dmg'] * obj.agility)
+    if obj.weapon_equiped is not None:
+        bonus += obj.weapon_equiped.damage
+    if obj.weapon2_equiped is not None:
+        bonus += obj.weapon2_equiped.damage
+    attack = obj.attack + bonus
     if settings.ROLES[obj.role]['double_dmg']:
-        chance = random.randint(100) #pylint: disable=E1120
+        chance = random.randint(0,100)
         if chance <= 10:
             return attack * 1.8
     return attack
