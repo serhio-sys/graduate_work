@@ -6,10 +6,10 @@ from django.templatetags.static import static
 
 
 class DungeonLvl(models.Model):
-    lvl = models.PositiveIntegerField("DUNGEON LVL")
-    min_treasure = models.PositiveIntegerField("MIN Treasure")
-    max_treasure = models.PositiveIntegerField("MAX Treasure")
-    heal = models.PositiveIntegerField("HEAL")
+    lvl = models.PositiveIntegerField("DUNGEON LVL", unique=True, primary_key=True)
+    is_boss_killed = models.BooleanField(default=False)
+    min_treasure = models.IntegerField("MIN")
+    max_treasure = models.IntegerField("MAX")
     map = models.FileField(upload_to="maps/", default="maps/map1.json")
     unlock_lvl = models.PositiveIntegerField("LVL FOR UNLOCK BOSS")
 
@@ -18,10 +18,9 @@ class Weapon(models.Model):
     name = models.CharField("WEAPON NAME",
                             max_length=30)
     damage = models.IntegerField("DAMAGE+")
-    img = models.ImageField("IMG", upload_to="weapon")
+    img = models.CharField("IMG", max_length=100)
     balance = models.IntegerField("SUM")
     lvl = models.IntegerField("LVL")
-    dun_lvl = models.IntegerField("DUNGEON LVL")
     req_agility = models.IntegerField("REQUIRED AGILITY")
     req_strength = models.IntegerField("REQUIRED STRENGTH")
     user = models.ForeignKey("users.NewUser", 
@@ -29,10 +28,16 @@ class Weapon(models.Model):
                              default=None,
                              null=True,
                              blank=True,
-                             on_delete=models.SET_NULL)
+                             on_delete=models.CASCADE)
 
     def get_absolute_url(self):
         return reverse("buy_w", kwargs={"pk": self.pk})
+    
+    def get_img(self):
+        return static('img/'+self.img)
+    
+    def get_sell_sum(self):
+        return self.balance//2
 
     def __str__(self) -> str:
         return str(self.name)
@@ -40,11 +45,10 @@ class Weapon(models.Model):
 
 class Armor(models.Model):
     name = models.CharField("ARMOR NAME", max_length=30)
-    img = models.ImageField("IMG", upload_to="armor")
+    img = models.CharField("IMG", max_length=100)
     armor = models.IntegerField("AROMOR+")
     balance = models.IntegerField("SUM")
     lvl = models.IntegerField("LVL")
-    dun_lvl = models.IntegerField("DUNGEON LVL")
     req_agility = models.IntegerField("REQUIRED AGILITY")
     req_strength = models.IntegerField("REQUIRED STRENGTH")
     user = models.ForeignKey("users.NewUser",
@@ -52,11 +56,17 @@ class Armor(models.Model):
                              default=None, 
                              null=True, 
                              blank=True,
-                             on_delete=models.SET_NULL)
+                             on_delete=models.CASCADE)
 
     def get_absolute_url(self):
         return reverse("buy_a", 
                        kwargs={"pk": self.pk})
+    
+    def get_img(self):
+        return static('img/'+self.img)
+    
+    def get_sell_sum(self):
+        return self.balance//2
 
     def __str__(self) -> str:
         return str(self.name)
@@ -167,3 +177,20 @@ class Enemy(models.Model):
             "effects": list(active_effects)
         }
     
+
+class Task(models.Model):
+
+    task_queue = models.PositiveSmallIntegerField("TASK QUEUE")
+    name = models.CharField("TASK NAME", max_length=50)
+    desc = models.TextField("TASK DESK")
+    reward_exp = models.PositiveSmallIntegerField("TASK EXP")
+    reward_money = models.PositiveSmallIntegerField("TASK MONEY_REWARD")
+    is_current = models.BooleanField("IS CURRENT")
+    enemy_type = models.CharField("TYPE", max_length=50)
+    killed_enemies = models.PositiveIntegerField("KILLED")
+    needed_enemies = models.PositiveIntegerField("NEEDED")
+    user = models.ForeignKey("users.NewUser", 
+                             default=None, 
+                             null=True, 
+                             blank=True, 
+                             on_delete=models.CASCADE)

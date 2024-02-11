@@ -2,14 +2,61 @@
     {
         "model": "game.Armor",
         "fields": {
-            "name": "Armor",
+            "name": "Щит вікинга",
             "armor": 4,
-            "img": "armor/unnamed.jpg",
-            "balance": 200,
-            "lvl": 1,
-            "dun_lvl": 1,
+            "img": "armor/armor_1.jpg",
+            "balance": 250,
+            "lvl": 2,
             "req_agility": 1,
-            "req_strength": 6
+            "req_strength": 2
+        }
+    },
+    {
+        "model": "game.Armor",
+        "fields": {
+            "name": "Бронзовий щит",
+            "armor": 7,
+            "img": "armor/armor_2.jpg",
+            "balance": 900,
+            "lvl": 4,
+            "req_agility": 5,
+            "req_strength": 7
+        }
+    },
+    {
+        "model": "game.Armor",
+        "fields": {
+            "name": "Металевий щит",
+            "armor": 11,
+            "img": "armor/armor_3.jpg",
+            "balance": 1400,
+            "lvl": 8,
+            "req_agility": 10,
+            "req_strength": 12
+        }
+    },
+    {
+        "model": "game.Armor",
+        "fields": {
+            "name": "Щит хрестоносця",
+            "armor": 15,
+            "img": "armor/armor_4.jpg",
+            "balance": 2200,
+            "lvl": 10,
+            "req_agility": 11,
+            "req_strength": 12
+        }
+    },
+    {
+        "model": "game.Armor",
+        "fields": {
+            "name": "Armor",
+            "armor": 24,
+            "img": "armor/armor_5.jpg",
+            "balance": 4500,
+            "lvl": 15,
+            "req_agility": 20,
+            "req_strength": 20
         }
     }
 ]

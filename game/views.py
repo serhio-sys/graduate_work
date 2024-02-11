@@ -1,23 +1,24 @@
 import random
-import datetime
 from django.shortcuts import redirect
-from django.urls import reverse
 from django.urls.exceptions import NoReverseMatch
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, JsonResponse, HttpResponseRedirect
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
-from django.forms import model_to_dict
-from users.models import NewUser, return_all_damage_taken
+from django.templatetags.static import static
+
+from users.models import NewUser
 from .services import get_select_classview, get_with_user_context,\
     post_select_classview, get_inventory_classview, \
     post_church, post_equip_armor, post_equip_weapon, get_buy_armor, get_buy_weapon,\
-    BasedDungeon
-from .models import Weapon, Armor, Enemy, Effect
+    BasedDungeon, BasedFight, model_to_dict
+from .models import Weapon, Armor, Enemy
 from .forms import UserIncreaseStatsForm, AttackForm
-from .logs import select_log, get_text_effect
+from .logs import select_log
+from .mixins import DungeonMixin
 
 
 @login_required
@@ -45,6 +46,44 @@ def get_start_game_page(request: HttpRequest):
 
 @login_required
 @require_POST
+def sell_weapon(request: HttpRequest, pk: int):
+    try:
+        item = Weapon.objects.get(pk = pk)
+    except Weapon.DoesNotExist:
+        return JsonResponse("error", safe=False, status=400)
+    if item.user == request.user:
+        if request.user.weapon_equiped == item or request.user.weapon2_equiped == item:
+            return JsonResponse("error", safe=False, status=400)
+        else:
+            request.user.balance += item.balance//2
+            request.user.save()
+            item.delete()
+        return JsonResponse("success", safe=False, status=200)
+    else:
+        return JsonResponse("error", safe=False, status=400)
+    
+
+@login_required
+@require_POST
+def sell_armor(request: HttpRequest, pk: int):
+    try:
+        item = Armor.objects.get(pk = pk)
+    except Weapon.DoesNotExist:
+        return JsonResponse("error", safe=False, status=400)
+    if item.user == request.user:
+        if request.user.armor_equiped == item:
+            return JsonResponse("error", safe=False, status=400)
+        else:
+            request.user.balance += item.balance
+            request.user.save()
+            item.delete()
+        return JsonResponse("success", safe=False, status=200)
+    else:
+        return JsonResponse("error", safe=False, status=400)
+
+
+@login_required
+@require_POST
 def equip_armor(request: HttpRequest):
     return post_equip_armor(request=request)
 
@@ -65,7 +104,7 @@ def buy_weapon(request: HttpRequest, pk: int):
     return get_buy_weapon(request=request, pk=pk)
 
 
-class InventoryView(LoginRequiredMixin, View):
+class InventoryView(DungeonMixin, View):
     template_name = "game/inventory.html"
 
     def get(self, request: HttpRequest, name: str):
@@ -75,28 +114,36 @@ class InventoryView(LoginRequiredMixin, View):
         return get_inventory_classview(request=request, template_name=self.template_name)
 
 
-class MainLocationView(LoginRequiredMixin, View):
+class MainLocationView(DungeonMixin, View):
     template_name = "game/main.html"
 
     def get(self, request: HttpRequest):
         return get_with_user_context(request=request, template_name=self.template_name).render()
 
 
-class CityLocation(LoginRequiredMixin, View):
+class CityLocation(DungeonMixin, View):
     template_name = "game/city_center.html"
 
     def get(self, request: HttpRequest):
         return get_with_user_context(request=request, template_name=self.template_name).render()
 
 
-class OutskirtsLocation(LoginRequiredMixin, View):
+class OutskirtsLocation(DungeonMixin, View):
     template_name = "game/outskirts.html"
+
+    def get(self, request: HttpRequest):
+        return get_with_user_context(request=request, template_name=self.template_name).render()
+    
+
+
+class TavernLocation(DungeonMixin, View):
+    template_name = "game/tavern.html"
 
     def get(self, request: HttpRequest):
         return get_with_user_context(request=request, template_name=self.template_name).render()
 
 
-class ChurchLocation(LoginRequiredMixin, View):
+class ChurchLocation(DungeonMixin, View):
     template_name = "game/church.html"
 
     def get(self, request: HttpRequest):
@@ -108,7 +155,7 @@ class ChurchLocation(LoginRequiredMixin, View):
         return post_church(request=request)
 
 
-class ShopLocation(LoginRequiredMixin, View):
+class ShopLocation(DungeonMixin, View):
     template_name = "game/shop.html"
 
     def get(self, request: HttpRequest):
@@ -119,7 +166,7 @@ class ShopLocation(LoginRequiredMixin, View):
         return response.render()
 
 
-class SelectClassView(LoginRequiredMixin, View):
+class SelectClassView(DungeonMixin, View):
     template_name = "game/select_class.html"
 
     def get(self, request: HttpRequest):
@@ -129,7 +176,7 @@ class SelectClassView(LoginRequiredMixin, View):
         return post_select_classview(request=request)
 
 
-class AbilitiesView(LoginRequiredMixin, View):
+class AbilitiesView(DungeonMixin, View):
     template_name = "game/abilities.html"
 
     def get(self, request: HttpRequest):
@@ -175,6 +222,8 @@ class DungeonView(BasedDungeon, LoginRequiredMixin, View):
             return redirect('fight')
         request.session['fight_posibility'] = -1
         response = self.get_based_response(request=request)
+        if isinstance(response, HttpResponseRedirect):
+            return response
         return response.render()
 
 class DungeonEnemyView(DungeonView):
@@ -182,9 +231,12 @@ class DungeonEnemyView(DungeonView):
 
     def get(self, request: HttpRequest):
         response = self.get_based_response(request=request)
+        if isinstance(response, HttpResponseRedirect):
+            return response
         response.template_name = self.template_name
         request.session['fight_posibility'] = 40
         request.session["x"], request.session["y"] = self.x, self.y
+        response.context_data['img'] = static("img/locations/dungeon/dun1_enemy.jpg")
         return response.render()
 
     def post(self, request: HttpRequest):
@@ -199,170 +251,95 @@ class FightResultsView(LoginRequiredMixin, View):
         return response.render()
 
 
-class FightView(LoginRequiredMixin, View):
+class FightView(BasedFight, LoginRequiredMixin, View):
     template_name = "game/fight/fight.html"
-    enemy = None
-    is_winner = None
-    logs = []
-    patterns = ['head','leg','body']
-
-    
-    def initial_enemy(self, user:NewUser):
-        if user.enemy is None:
-            enemies = Enemy.objects.filter(dungeon__lvl = user.dungeon.lvl, is_boss = False)
-            user.enemy = Enemy.objects.create(
-                **model_to_dict(enemies[random.randint(0,len(enemies)-1)], exclude=['id','dungeon'])
-                )
-            user.save(update_fields=['enemy'])
-            self.enemy = user.enemy
-        else:
-            self.enemy = user.enemy
-
-    def apply_effect(self, effect_name: str, whom: NewUser | Enemy, duration_min: int):
-        effect = Effect.objects.get(name=effect_name, user__isnull=True, enemy__isnull=True)
-        en_effect = Effect(**model_to_dict(effect, exclude=['id']))
-        en_effect.deleted_time = datetime.datetime.now() + datetime.timedelta(minutes=duration_min)
-        setattr(en_effect, 'user' if isinstance(whom, NewUser) else 'enemy', whom)
-        if en_effect.user is not None or en_effect.enemy is not None:
-            en_effect.save()
-
-    def get_entity_effect(self, who: NewUser | Enemy, whom: NewUser | Enemy):
-        is_whom_user = isinstance(whom, NewUser)
-
-        if is_whom_user and whom.effect_set.all().count() > 3: # pylint: disable=R1705
-            return
-        elif not is_whom_user and whom.effect_enemy.all().count() > 3:
-            return
-
-        if who.role in ["agility", "shooter"] and random.randint(0, 100) < 5:
-            self.apply_effect("Кровотеча", whom, 2)
-            self.logs.append(get_text_effect(who.get_name(), whom.get_name(), "bliding"))
-        elif who.role == "strength" and random.randint(0, 100) < 8:
-            self.apply_effect("Перелом кістки", whom, 2)    
-            self.logs.append(get_text_effect(who.get_name(), whom.get_name(), "bones"))
-
-    def attack(self, request: HttpRequest, who: NewUser|Enemy, whom: NewUser|Enemy) -> int:
-        form = AttackForm(request.POST)
-        if form.is_valid():
-            rnd = random.randint(0,len(self.patterns)-1)
-            if isinstance(who, NewUser):
-                attack = 0
-                if form.cleaned_data['attack'] != self.patterns[rnd]:
-                    attack = return_all_damage_taken(who) - whom.defence
-                    if whom.health-attack>0:
-                        whom.health -= attack
-                    else:
-                        whom.health = 0
-                        self.is_winner = True
-                    self.get_entity_effect(who, whom)
-                    whom.save(update_fields=['health'])
-            else:
-                attack = 0
-                if self.patterns[rnd] != form.cleaned_data['defence']:
-                    attack = return_all_damage_taken(who) - whom.defence
-                if whom.health-attack>0:
-                    whom.health -= attack
-                else:
-                    whom.health = 0
-                    self.is_winner = False
-                self.get_entity_effect(who, whom)
-                whom.save(update_fields=['health'])
-        else:
-            attack = return_all_damage_taken(who)
-            if whom.health-attack>0:
-                whom.health -= attack
-            else:
-                whom.health = 0
-            whom.save(update_fields=['health'])
-        return attack
-
-    def generate_response(self, request: HttpRequest, log: list[str]):
-        if self.is_winner is None:
-            response = JsonResponse({
-                "enemy_hp": self.enemy.health,
-                "user_hp": request.user.health,
-                "user_stats": request.user.get_summary_stats(),
-                "enemy_stats": self.enemy.get_summary_stats(),
-                "winner": self.is_winner,
-                "log": log
-            }, status=200)
-        else:
-            response = JsonResponse({
-                "winner": self.is_winner,
-                "redirect_url": reverse("fight_results"),
-            }, status=200)
-        return response
-
-    def finish_attack(self, request: HttpRequest, logs: list[str]):
-        print(self.is_winner)
-        if self.is_winner is True:
-            request.session['winner'] = True
-            request.user.exp += random.randint(1,15)
-            request.user.balance += random.randint(request.user.dungeon.min_treasure,
-                                                   request.user.dungeon.max_treasure)
-            request.user.save(update_fields=['exp','balance'])
-            request.user.enemy.delete()
-        elif self.is_winner is False:
-            request.session['winner'] = False
-            request.user.enemy.delete()
-        response = self.generate_response(request, logs)
-        return response
 
     def get(self, request: HttpRequest):
-        self.initial_enemy(request.user)
+        response = get_with_user_context(request=request, template_name=self.template_name)
+        self.initial_enemy(response.context_data['user'])
         request.session['fight_posibility'] = -1
         if request.session.get('enemy_first', False):
-            self.attack(request, self.enemy, request.user)
-            request.session['enemy_first'] = False
-        response = get_with_user_context(request=request, template_name=self.template_name)
+            self.attack(request, response.context_data['user'].enemy, response.context_data['user'])
+            request.session['enemy_first'] = False     
         response.context_data.update(
             {
                 "form": AttackForm(),
-                "enemy": self.enemy,
-                "effects": request.user.get_summary_stats(),
-                "enemy_effects": self.enemy.get_summary_stats()
+                "enemy": response.context_data['user'].enemy,
+                "effects": response.context_data['user'].get_summary_stats(),
+                "enemy_effects": response.context_data['user'].enemy.get_summary_stats()
             }
         )
         return response.render()
     
     def post(self, request: HttpRequest):
-        self.initial_enemy(request.user)
-        if self.enemy.role == "agility":
+        user = get_user_model().objects.select_related('weapon2_equiped', 'weapon_equiped', 'enemy')\
+                .get(pk=request.user.pk)
+        if user.enemy.role == "agility":
             if random.randint(0,100) < 5:
-                dmg = self.attack(request, self.enemy, request.user)
-                self.logs.append(select_log(dmg)(self.enemy.name, 
-                                                 request.user.username, 
-                                                 type="agility", dmg=dmg))
-                response = self.finish_attack(request, self.logs)
+                dmg = self.attack(request, user.enemy, user)
+                self.logs.append(select_log(who=user.enemy.name, 
+                                            whom=user.username, 
+                                            type="agility", dmg=dmg))
+                response = self.finish_attack(request, user, self.logs)
                 return response
-        elif self.enemy.role == "shooter":
+        elif user.enemy.role == "shooter":
             if random.randint(0,100) < 10:
-                dmg = self.attack(request, self.enemy, request.user)
-                self.logs.append(select_log(dmg)(self.enemy.name, 
-                                                 request.user.username, 
-                                                 type="shooter", dmg=dmg))
-                response = self.finish_attack(request, self.logs)
+                dmg = self.attack(request, user.enemy, user)
+                self.logs.append(select_log(who=user.enemy.name, 
+                                            whom=user.username, 
+                                            type="shooter", dmg=dmg))
+                response = self.finish_attack(request, user, self.logs)
                 return response
         if self.request.user.role == "agility":
             if random.randint(0,100) < 5:
-                dmg = self.attack(request, request.user, self.enemy)
-                self.logs.append(select_log(dmg)(request.user.username, 
-                                                 self.enemy.name, 
-                                                 type="agility", dmg=dmg))  
-                response = self.finish_attack(request, self.logs)
+                dmg = self.attack(request, user, user.enemy)
+                self.logs.append(select_log(who=user.username, 
+                                            whom=user.enemy.name, 
+                                            type="agility", dmg=dmg))  
+                response = self.finish_attack(request, user, self.logs)
                 return response
         elif self.request.user.role == "shooter":
             if random.randint(0,100) < 10:
-                dmg = self.attack(request, request.user, self.enemy)
-                self.logs.append(select_log(dmg)(request.user.username, 
-                                                 self.enemy.name, 
-                                                 type="shooter", dmg=dmg))                
-                response = self.finish_attack(request, self.logs)
+                dmg = self.attack(request, user, user.enemy)
+                self.logs.append(select_log(who=user.username, 
+                                            whom=user.enemy.name, 
+                                            type="shooter", dmg=dmg))                
+                response = self.finish_attack(request, user, self.logs)
                 return response
-        dmg = self.attack(request, request.user, self.enemy)
-        self.logs.append(select_log(dmg)(request.user.username, self.enemy.name, dmg=dmg))                    
-        dmg = self.attack(request, self.enemy, request.user)
-        self.logs.append(select_log(dmg)(self.enemy.name, request.user.username, dmg=dmg))                  
-        response = self.finish_attack(request, self.logs)
+        dmg = self.attack(request, user, user.enemy)
+        self.logs.append(select_log(who=user.username, 
+                                    whom=user.enemy.name, 
+                                    dmg=dmg))                    
+        dmg = self.attack(request, user.enemy, user)
+        self.logs.append(select_log(who=user.enemy.name,
+                                    whom=user.username, 
+                                    dmg=dmg))                  
+        response = self.finish_attack(request, user, self.logs)
         return response
                 
+class DungeonBossView(DungeonView):
+    template_name = "game/dungeon/dungeon_boss.html"
+
+    def get(self, request: HttpRequest):
+        response = self.get_based_response(request=request)
+        if isinstance(response, HttpResponseRedirect):
+            return response
+        response.template_name = self.template_name
+        request.session["x"], request.session["y"] = self.x, self.y
+        response.context_data['img'] = static("img/locations/dungeon/dun1_boss.jpg")
+        return response.render()
+
+    def post(self, request: HttpRequest):
+        return redirect("fight_boss")
+    
+
+class BossFightView(FightView):
+
+    def initial_enemy(self, user: NewUser):
+        if user.enemy is None:
+            enemies = Enemy.objects.filter(dungeon__lvl = user.dungeon.lvl, is_boss = True)
+            user.enemy = Enemy.objects.create(
+                **model_to_dict(enemies[random.randint(0,len(enemies)-1)], exclude=['id','dungeon'])
+                )
+            user.save(update_fields=['enemy'])
+        return super().initial_enemy(user)

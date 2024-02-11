@@ -2,12 +2,19 @@
     {
         "model": "game.DungeonLvl",
         "fields": {
-            "id": 1,
             "lvl": 1,
             "min_treasure": 10,
             "max_treasure": 50,
-            "heal": 20,
             "unlock_lvl": 4
+        }
+    },
+    {
+        "model": "game.DungeonLvl",
+        "fields": {
+            "lvl": 2,
+            "min_treasure": 40,
+            "max_treasure": 100,
+            "unlock_lvl": 7
         }
     }
 ]

@@ -28,6 +28,7 @@
 </div>
 <div class="navigation">
     <div class="map">
+        <img src="{{ img }}" class="image_map"/>
     </div>
     <div>
         карта
@@ -66,7 +67,7 @@
 {% block low %}
 <div class="w-100 h-100 d-flex flex-column align-items-center">
     <h3>{% trans "Перед вами стоїть ворог. Що ви будете робити?" %}</h3>
-    <p>{% trans "Якщо ви будете рухатись вперед є можливість, що бій почнеться й ворог атакує першим (50% шансу)." %}</p>
+    <p>{% trans "Якщо ви будете продовжувати рухатись є можливість, що бій почнеться й ворог атакує першим (50% шансу)." %}</p>
     <form method="post">
         {% csrf_token %}
         <button class="btn btn-outline-light">{% trans "Почати бій, бо це найкращий захист" %}</button>

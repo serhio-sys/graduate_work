@@ -25,22 +25,24 @@ LOG_PATTERNS = {
     }
 }
 
+
 def get_text_effect(who: str, whom:str, type_l: str) -> str:
     log_pattern = LOG_PATTERNS.get("effect", {}).get(type_l, "")
     return log_pattern % (who, whom)
 
-def get_text_attack(who: str, whom:str, type_l: str = "simple", **kwargs) -> str:
+
+def get_text_attack(who: str, whom:str, type_l:str, **kwargs) -> str:
     log_pattern = LOG_PATTERNS.get("attack", {}).get(type_l, "")
     return log_pattern % (who, whom, kwargs['dmg'])
 
 
-def get_text_defence(who: str, whom:str, type_l: str = "simple") -> str:
+def get_text_defence(who: str, whom:str, type_l:str) -> str:
     log_pattern = LOG_PATTERNS.get("defence", {}).get(type_l, "")
-    return log_pattern % (who, whom)
+    return log_pattern % (whom, who)
 
 
-def select_log(dmg: int) -> callable:
+def select_log(who: str, whom:str, dmg: int, type: str = "simple") -> callable:
     if dmg > 0:
-        return get_text_attack
-    return get_text_defence
+        return get_text_attack(who, whom, type, dmg=dmg)
+    return get_text_defence(who, whom, type)
     

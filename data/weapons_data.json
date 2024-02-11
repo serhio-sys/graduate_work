@@ -2,27 +2,105 @@
     {
         "model": "game.Weapon",
         "fields": {
-            "name": "Weapon1",
-            "damage": 5,
-            "img": "weapon/unnamed.jpg",
-            "balance": 100,
-            "lvl": 1,
-            "dun_lvl": 1,
-            "req_agility": 2,
-            "req_strength": 5
+            "id": 1,
+            "name": "Кривий меч",
+            "damage": 4,
+            "img": "weapon/sword_1.jpg",
+            "balance": 600,
+            "lvl": 2,
+            "req_agility": 1,
+            "req_strength": 4
         }
     },
     {
         "model": "game.Weapon",
         "fields": {
-            "name": "Weapon2",
-            "damage": 3,
-            "img": "weapon/unnamed.jpg",
-            "balance": 100,
-            "lvl": 1,
-            "dun_lvl": 1,
+            "id": 2,
+            "name": "Кіготь бобра",
+            "damage": 6,
+            "img": "weapon/sword_2.jpg",
+            "balance": 1200,
+            "lvl": 3,
+            "req_agility": 2,
+            "req_strength": 7
+        }
+    },
+    {
+        "model": "game.Weapon",
+        "fields": {
+            "id": 3,
+            "name": "Меч паладіна",
+            "damage": 9,
+            "img": "weapon/sword_3.jpg",
+            "balance": 2300,
+            "lvl": 5,
+            "req_agility": 4,
+            "req_strength": 10
+        }
+    },
+    {
+        "model": "game.Weapon",
+        "fields": {
+            "id": 4,
+            "name": "Зачарований меч",
+            "damage": 16,
+            "img": "weapon/sword_4.jpg",
+            "balance": 3560,
+            "lvl": 7,
             "req_agility": 5,
+            "req_strength": 15
+        }
+    },
+    {
+        "model": "game.Weapon",
+        "fields": {
+            "id": 5,
+            "name": "Кухонний ній",
+            "damage": 3,
+            "img": "weapon/knife_1.jpg",
+            "balance": 500,
+            "lvl": 2,
+            "req_agility": 4,
+            "req_strength": 1
+        }
+    },
+    {
+        "model": "game.Weapon",
+        "fields": {
+            "id": 6,
+            "name": "Мисливський ніж",
+            "damage": 5,
+            "img": "weapon/knife_2.jpg",
+            "balance": 1310,
+            "lvl": 4,
+            "req_agility": 10,
             "req_strength": 2
+        }
+    },
+    {
+        "model": "game.Weapon",
+        "fields": {
+            "id": 7,
+            "name": "Ніж розбійника",
+            "damage": 25,
+            "img": "weapon/knife_3.jpg",
+            "balance": 2210,
+            "lvl": 7,
+            "req_agility": 17,
+            "req_strength": 4
+        }
+    },
+    {
+        "model": "game.Weapon",
+        "fields": {
+            "id": 8,
+            "name": "Ніж підземілля",
+            "damage": 20,
+            "img": "weapon/knife_4.jpg",
+            "balance": 4310,
+            "lvl": 10,
+            "req_agility": 26,
+            "req_strength": 4
         }
     }
 ]

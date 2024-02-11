@@ -36,9 +36,9 @@
                         {% endwith %}
                         <div>{% trans "Захист: " %} {{user.return_all_armor}} ({{user.defence}}{% if user.armor_equiped is not None %}+{{user.armor_equiped.armor}}{% endif %})</div>
                         {% with user.get_summary_stats as stats %}
-                        <div>{% trans "Сила: " %} {{stats.str.total}} ({{stats.str.hero}}{% if stats.str.sum >= 0 %}+{{stats.str.sum}}{% else %}-{{stats.str.sum}}{% endif %})</div>
-                        <div>{% trans "Спритність: " %} {{stats.ag.total}} ({{stats.ag.hero}}{% if stats.ag.sum >= 0 %}+{{stats.ag.sum}}{% else %}-{{stats.ag.sum}}{% endif %})</div>
-                    </div>
+                        <div class="user_str">{% trans "Сила: " %} {{stats.str.total}} ({{stats.str.hero}}{% if stats.str.sum >= 0 %}+{{stats.str.sum}}{% else %}{{stats.str.sum}}{% endif %})</div>
+                        <div class="user_ag">{% trans "Спритність: " %} {{stats.ag.total}} ({{stats.ag.hero}}{% if stats.ag.sum >= 0 %}+{{stats.ag.sum}}{% else %}{{stats.ag.sum}}{% endif %})</div>
+                   </div>
                 </div>
                 <div class="hero_health">
                     <div class="progress mt-2" style="height: 15px;">
@@ -48,10 +48,10 @@
                 <div class="mt-4">{% trans "Рахунок: " %} {{user.balance}} $</div>
                 <div class="effects mt-3">
                     <div class="btn btn-light btn-sm effects-btn">{% trans "Ефекти" %}</div>
-                    <div class="effects_info">
+                    <div class="effects_info user_effects">
                         {% if stats.effects %}
                             {% for effect in stats.effects %}
-                            <span>{{effect.name}}: {{effect.desc}} | {{effect.deleted_time|date:"H:i:s" }}</span>
+                            <span>{{effect.name}}: {{effect.desc}} | {{effect.deleted_time|date:"H:i:s" }}</span><br>
                             {% endfor %}
                         {% else %}
                             <span>{% trans "Немає жодних ефектів накладених на героя." %}</span>
@@ -62,19 +62,37 @@
             </div>
             <div class="mt-5 d-flex flex-column gap-1">
                 {% if user.weapon_equiped %}
-                    <img src="{{user.weapon_equiped.img.url}}" width="85px" height="85px"/>
+                    <div class="img_wp"> 
+                        <img src="{{user.weapon_equiped.img.url}}" width="85px" height="85px"/>
+                        <div class="d-flex flex-column align-items-center justify-content-center img_txt">
+                            <span>{{user.weapon_equiped.name}}</span>
+                            <span>{{user.weapon_equiped.damage}} DMG</span>
+                        </div>
+                    </div>
                 {% else %}
                     <div class="empty_img"></div>
                 {% endif %}
                 {% if user.weapon2_equiped %}
                     {% if user.weapon_equiped %}
+                    <div class="img_wp">
                         <img src="{{user.weapon2_equiped.img.url}}" width="85px" height="85px"/>
+                        <div class="d-flex flex-column align-items-center justify-content-center img_txt">
+                            <span>{{user.weapon2_equiped.name}}</span>
+                            <span>{{user.weapon2_equiped.damage}} DMG</span>
+                        </div>
+                    </div>
                     {% else %}
                         <div class="empty_img"></div>
                     {% endif %}
                 {% else %}
                     {% if user.armor_equiped %}
-                        <img src="{{user.armor_equiped.img.url}}" width="85px" height="85px"/>
+                        <div class="img_wp"> 
+                            <img src="{{user.armor_equiped.img.url}}" width="85px" height="85px"/>
+                            <div class="d-flex flex-column align-items-center justify-content-center img_txt">
+                                <span>{{user.armor_equiped.name}}</span>
+                                <span>{{user.armor_equiped.armor}} Defence</span>
+                            </div>
+                        </div>
                     {% else %}
                         <div class="empty_img"></div>
                     {% endif %}

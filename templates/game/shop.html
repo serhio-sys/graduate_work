@@ -25,30 +25,32 @@
         {% for w in weapons %}
         <div class="weapon mt-3">
             <div>
-                <img src="{{w.img.url}}"  class="weapon_img"/>
+                <img src="{{w.get_img}}"  class="weapon_img"/>
                 <span>{{w.name}}</span>
             </div>
             <div>{% trans "Урон:" %} {{w.damage}}</div>
             <div>{% trans "Ціна:" %} {{w.balance}} $</div>
             <div>{% trans "Рівень гравця:" %} {{w.lvl}}</div>
-            <div>{% trans "Рівень підземілля" %} {{w.dun_lvl}}</div>
+            <div>{% trans "Потрібна спритність" %} {{w.req_agility}}</div>
+            <div>{% trans "Потрібна сила" %} {{w.req_strength}}</div>
             <a href="{{w.get_absolute_url}}" class="btn btn-outline-warning mt-2">{% trans "Купити" %}</a>
         </div>
         {% endfor %}
     </div>
     <hr/>
     <h2 class="text-center">{% trans "Захист" %}</h2>
-    <div class="d-flex flex-wrap w-100">
+    <div class="d-flex flex-wrap gap-3 w-100">
         {% for a in armors %}
-        <div class="weapon gap-3 mt-3">
+        <div class="weapon mt-3">
             <div>
-                <img src="{{a.img.url}}"  class="weapon_img"/>
+                <img src="{{a.get_img}}"  class="weapon_img"/>
                 <span>{{a.name}}</span>
             </div>
             <div>{% trans "Захист" %}: {{a.armor}}</div>
             <div>{% trans "Ціна" %}: {{a.balance}} $</div>
             <div>{% trans "Рівень гравця:" %} {{a.lvl}}</div>
-            <div>{% trans "Рівень підземілля" %} {{a.dun_lvl}}</div>
+            <div>{% trans "Потрібна спритність" %} {{a.req_agility}}</div>
+            <div>{% trans "Потрібна сила" %} {{a.req_strength}}</div>
             <a href="{{a.get_absolute_url}}" class="btn btn-outline-warning mt-2">{% trans "Купити" %}</a>
         </div>
         {% endfor %}

@@ -28,8 +28,9 @@
 </div>
 <div class="navigation">
     <div class="map">
+        <img src="{{ img }}" class="image_map"/>
     </div>
-    <div>
+    <div class="mt-3">
         {% if a %}
         <a href="{{a}}" class="btn btn-warning btn-sm">v</a>
         {% else %}
@@ -62,6 +63,6 @@
 <div class="d-flex justify-content-start align-items-center">
 </div>
 <div class="location_name d-flex flex-column justify-content-start align-items-center h-100">
-    {% trans "Підземілля | Рівень:" %} {{user.dungeon.lvl}}
+    {% trans "Підземілля | Рівень:" %} 1
 </div>
 {% endblock %}

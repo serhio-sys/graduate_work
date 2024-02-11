@@ -70,3 +70,22 @@
 .message.hidden {
     top: -100%;
 }
+.img_wp{
+    position: relative;
+    cursor: pointer;
+}
+.img_txt{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transform: scale(0,0);
+    top: 0;
+    left: 0;
+    background: rgba(0,0,0, 0.7);
+    transition: all ease 400ms;
+}
+.img_wp:hover .img_txt{
+    transform: scale(1,1);
+    opacity: 1;
+}

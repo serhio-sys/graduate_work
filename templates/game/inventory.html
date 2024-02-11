@@ -41,7 +41,7 @@
                         <div class="progress-bar bg-danger" role="progressbar" style="width: {{user.get_current_hp}}%;" aria-valuenow="{{user.get_current_hp}}" aria-valuemin="0" aria-valuemax="{{user.get_max_hp}}">{% trans "здоров'я:" %}{{user.get_current_hp}}</div>
                     </div>
                 </div>
-                <div class="mt-4">{% trans "Рахунок: " %} {{user.balance}} $</div>
+                <div class="mt-4 bal">{% trans "Рахунок: " %} {{user.balance}} $</div>
             </div>
             <div class="mt-5 d-flex flex-column gap-1" ondrop="drop_eq(event)" ondragover="allowDrop(event)">
                 {% if user.weapon_equiped %}
@@ -72,6 +72,7 @@
                     </div>
                     <div><span>{{w.name}}</span></div>
                     <div>{% trans "Урон:" %} {{w.damage}}</div>
+                    <div><form class="sell_form" method="post" action="{% url 'sell_w' w.pk %}"><button type="submit" data-sell-sum="{{w.get_sell_sum}}" class="btn btn-outline-warning mt-2">Sell by {{w.get_sell_sum}}</button></form></div>
                 </div>
                 {% endfor %}
                 {% else %}
@@ -90,6 +91,7 @@
                         </div>
                         <span>{{a.name}}</span>
                         <div>{% trans "Захист" %}: {{a.armor}}</div>
+                        <div><form class="sell_form" method="post" action="{% url 'sell_a' a.pk %}"><button type="submit" data-sell-sum="{{w.get_sell_sum}}" class="btn btn-outline-warning mt-2">Sell by {{a.get_sell_sum}}</button></form></div>
                     </div>
                     {% endfor %}
                 {% else %}
@@ -111,6 +113,26 @@
 <script>
     const Url = "/"
     var csrftoken = '{{ csrf_token }}';
+    var balance = document.querySelector('.bal')
+    var user_balance = {{user.balance}};
+
+    document.querySelectorAll('.sell_form').forEach(item => {
+        
+        item.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let sellSumAttribute = e.target.querySelector('.btn').getAttribute('data-sell-sum');
+            await fetch(item.action, {
+                method: "POST",
+                headers: {'X-CSRFToken': csrftoken} 
+            }).then(res => {
+                if (res.status == 200) {
+                    user_balance += parseInt(sellSumAttribute)
+                    balance.innerHTML = `{% trans "Рахунок: " %}${user_balance}  $`
+                    item.parentElement.parentElement.remove();
+                }
+            });
+        });
+    });
 
     function allowDrop(ev) {
         ev.preventDefault();

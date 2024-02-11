@@ -34,6 +34,7 @@ form li {
     position: relative;
     width: 180px;
     height:260px;
+    overflow: hidden;
 }
 .hero_stats {
     position: absolute;

@@ -20,6 +20,7 @@ class NewUser(AbstractUser):
     lvl = models.IntegerField("LEVEL", default=1)
     exp = models.IntegerField("EXP", default=0)
     role = models.CharField("ROLE", default=None, max_length=40, blank=True, null=True)
+    killed_units = models.PositiveIntegerField("Killed units", default=0)
     current_position = models.CharField("POSITION IN THE GAME", 
                                         max_length=200, 
                                         blank=True, 
@@ -51,6 +52,10 @@ class NewUser(AbstractUser):
                                 null=True, 
                                 blank=True, 
                                 on_delete=models.SET_NULL)
+    current_dungeon = models.PositiveIntegerField(
+                                default=1,
+                                blank=True                            
+                                )
     is_fight = models.BooleanField("IS FIGHT", default=False)
     enemy = models.ForeignKey("game.Enemy", 
                               verbose_name="ENEMY", 
@@ -145,6 +150,8 @@ def return_all_damage_taken(obj: NewUser | Enemy) -> int:
     if obj.weapon2_equiped is not None:
         bonus += obj.weapon2_equiped.damage
     attack = obj.attack + bonus
+    if obj.role == 'strength':
+        return attack * 1.2
     if settings.ROLES[obj.role]['double_dmg']:
         chance = random.randint(0,100)
         if chance <= 10:

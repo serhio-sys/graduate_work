@@ -1,0 +1,76 @@
+{% extends "game/main.html" %}
+{% load i18n %}
+{% load static %}
+{% block head_title %}{% trans "Dungeon" %}{% endblock %}
+{% block map %}
+<div class="micro_map">
+    {% for row in map %}
+        <div class="d-flex">
+            {% for cell in row %}
+                {% if cell == 1 %}
+                    <img src="{% static 'img/map/empty_loc.png' %}" width="40px" height="40px" />
+                {% elif cell == 6 %}
+                    <img src="{% static 'img/map/you.png' %}" width="40px" height="40px" />
+                {% elif cell == 2 %}
+                    <img src="{% static 'img/map/leave.png' %}" width="40px" height="40px" />
+                {% elif cell == 3 %}
+                    <img src="{% static 'img/map/treasure.png' %}" width="40px" height="40px" />
+                {% elif cell == 4 %}
+                    <img src="{% static 'img/map/fight.png' %}" width="40px" height="40px" />
+                {% elif cell == 5 %}
+                    <img src="{% static 'img/map/boss.png' %}" width="40px" height="40px" />
+                {% else %}
+                    <img src="{% static 'img/map/empty.png' %}" width="40px" height="40px" />
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>
+<div class="navigation">
+    <div class="map">
+        <img src="{{ img }}" class="image_map"/>
+    </div>
+    <div>
+        карта
+    </div>
+    <div>
+        {% if a %}
+        <a href="{{a}}" class="btn btn-warning btn-sm">v</a>
+        {% else %}
+        <a class="disable btn btn-outline-dark btn-sm">v</a>
+        {% endif %}
+        {% if r %}
+        <a href="{{r}}" class="btn btn-warning btn-sm"><</a>
+        {% else %}
+        <a class="disable btn btn-outline-dark btn-sm"><</a>
+        {% endif %}
+        {% if l %}
+        <a href="{{l}}" class="btn btn-warning btn-sm">></a>
+        {% else %}
+        <a class="disable btn btn-outline-dark btn-sm">></a>
+        {% endif %}    
+        {% if b %}
+        <a href="{{b}}" class="btn btn-warning btn-sm">^</a>
+        {% else %}
+        <a class="disable btn btn-outline-dark btn-sm">^</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+{% block location %}
+<div class="d-flex justify-content-start align-items-center">
+</div>
+<div class="location_name d-flex flex-column justify-content-start align-items-center h-100">
+    {% trans "Рівень підземелля | " %}{{user.dungeon.lvl}}
+</div>
+{% endblock %}
+{% block low %}
+<div class="w-100 h-100 d-flex flex-column align-items-center">
+    <h3>{% trans "Щоб пройти далі треба перемогти головного командиру захисників першого рівня?" %}</h3>
+    <p>{% trans "Готові до бою?" %}</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-outline-light">{% trans "Готовий!" %}</button>
+    </form>
+</div>
+{% endblock %}
